@@ -24,3 +24,6 @@ dist-ssr
 *.sw?
 .env
 .gitignore
+.env
+.env.local
+.env.*.local
