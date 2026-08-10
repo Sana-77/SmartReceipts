@@ -4,7 +4,7 @@ import { FaRobot, FaPaperPlane, FaTimes, FaTrash } from "react-icons/fa";
 import { chatWithAI } from "../services/aiService";
 
 function AIChat({ expenses, budget, total, isOpen, onClose }) {
-  const [isOpen, setIsOpen] = useState(false);
+  //const [isOpen, setIsOpen] = useState(false);
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
