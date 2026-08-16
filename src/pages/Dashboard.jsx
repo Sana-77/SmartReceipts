@@ -14,8 +14,14 @@ import ExportButtons from "../components/ExportButtons";
 import DashboardNav from "../components/DashboardNav";
 import AIChat from "../components/AIChat";
 
+
 import { exportCSV, exportPDF } from "../utils/exportReport";
-import { getExpenses, saveExpenses } from "../services/localStorage";
+import {
+  getExpensesFromSupabase,
+  addExpenseToSupabase,
+  updateExpenseInSupabase,
+  deleteExpenseFromSupabase,
+} from "../services/expenseService";
 import { getBudget, saveBudget } from "../services/budgetStorage";
 import { categorizeExpense, analyzeExpenses } from "../services/aiService";
 
@@ -24,7 +30,7 @@ function Dashboard() {
   // State
   // -------------------------
 
-  const [expenses, setExpenses] = useState(getExpenses());
+  const [expenses, setExpenses] = useState([]);
   const [isCategorizing, setIsCategorizing] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
@@ -36,13 +42,22 @@ function Dashboard() {
   const [sortBy, setSortBy] = useState("newest");
   const [budget, setBudget] = useState(getBudget);
   const [isChatOpen, setIsChatOpen] = useState(false);
-  // -------------------------
-  // Save to Local Storage
-  // -------------------------
 
   useEffect(() => {
-    saveExpenses(expenses);
-  }, [expenses]);
+    const loadExpenses = async () => {
+      try {
+        const data = await getExpensesFromSupabase();
+
+        setExpenses(data);
+      } catch (err) {
+        console.error("Failed to load expenses:", err);
+
+        setError("Unable to load your expenses.");
+      }
+    };
+
+    loadExpenses();
+  }, []);
 
   // -------------------------
   // Clear Error
@@ -69,14 +84,12 @@ function Dashboard() {
     try {
       const aiCategory = await categorizeExpense(itemName);
 
-      const newExpense = {
-        id: crypto.randomUUID(),
+      const newExpense = await addExpenseToSupabase({
         itemName,
         price,
         aiCategory,
         receiptImage,
-        createdAt: new Date().toISOString(),
-      };
+      });
 
       setExpenses((prev) => [...prev, newExpense]);
     } catch (err) {
@@ -84,16 +97,20 @@ function Dashboard() {
 
       setError("AI categorization failed. Expense was saved as Miscellaneous.");
 
-      const newExpense = {
-        id: crypto.randomUUID(),
-        itemName,
-        price,
-        aiCategory: "Miscellaneous",
-        receiptImage,
-        createdAt: new Date().toISOString(),
-      };
+      try {
+        const newExpense = await addExpenseToSupabase({
+          itemName,
+          price,
+          aiCategory: "Miscellaneous",
+          receiptImage,
+        });
 
-      setExpenses((prev) => [...prev, newExpense]);
+        setExpenses((prev) => [...prev, newExpense]);
+      } catch (supabaseError) {
+        console.error("Failed to save expense:", supabaseError);
+
+        setError("Unable to save the expense. Please try again.");
+      }
     } finally {
       setIsCategorizing(false);
     }
@@ -112,35 +129,40 @@ function Dashboard() {
   // Update Expense
   // -------------------------
 
-  const handleUpdateExpense = (id, updatedData) => {
-    setExpenses((prev) =>
-      prev.map((expense) =>
-        expense.id === id
-          ? {
-              ...expense,
-              itemName: updatedData.itemName,
-              price: updatedData.price,
+  const handleUpdateExpense = async (id, updatedData) => {
+    try {
+      setError("");
 
-              // Keep the existing receipt unless
-              // a new receipt was provided.
-              receiptImage:
-                updatedData.receiptImage !== undefined
-                  ? updatedData.receiptImage
-                  : expense.receiptImage,
-            }
-          : expense,
-      ),
-    );
+      const updatedExpense = await updateExpenseInSupabase(id, updatedData);
 
-    setEditingExpense(null);
+      setExpenses((prev) =>
+        prev.map((expense) => (expense.id === id ? updatedExpense : expense)),
+      );
+
+      setEditingExpense(null);
+    } catch (err) {
+      console.error("Failed to update expense:", err);
+
+      setError("Unable to update the expense. Please try again.");
+    }
   };
 
   // -------------------------
   // Delete Expense
   // -------------------------
 
-  const handleDeleteExpense = (id) => {
-    setExpenses((prev) => prev.filter((expense) => expense.id !== id));
+  const handleDeleteExpense = async (id) => {
+    try {
+      setError("");
+
+      await deleteExpenseFromSupabase(id);
+
+      setExpenses((prev) => prev.filter((expense) => expense.id !== id));
+    } catch (err) {
+      console.error("Failed to delete expense:", err);
+
+      setError("Unable to delete the expense. Please try again.");
+    }
   };
 
   // -------------------------
@@ -396,7 +418,11 @@ function Dashboard() {
           OVERVIEW
       ====================================================== */}
         <section id="overview" className="scroll-mt-28">
-          <DashboardCard total={total} expenseCount={expenses.length} />
+          <DashboardCard
+            total={total}
+            expenseCount={expenses.length}
+            budget={budget}
+          />
         </section>
 
         {/* =====================================================
