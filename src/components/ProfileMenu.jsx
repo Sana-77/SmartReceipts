@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { FaChevronDown, FaCog, FaSignOutAlt, FaUser } from "react-icons/fa";
+import { FaChevronDown, FaSignOutAlt, FaUser } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 
@@ -11,7 +11,10 @@ function ProfileMenu() {
 
   const menuRef = useRef(null);
 
-  // Get currently authenticated user
+  // =====================================================
+  // GET CURRENT USER
+  // =====================================================
+
   useEffect(() => {
     const getUser = async () => {
       const {
@@ -23,7 +26,6 @@ function ProfileMenu() {
 
     getUser();
 
-    // Keep profile updated if authentication changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -35,7 +37,10 @@ function ProfileMenu() {
     };
   }, []);
 
-  // Close dropdown when clicking outside
+  // =====================================================
+  // CLOSE DROPDOWN WHEN CLICKING OUTSIDE
+  // =====================================================
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
@@ -50,6 +55,28 @@ function ProfileMenu() {
     };
   }, []);
 
+  // =====================================================
+  // REFRESH USER
+  // =====================================================
+
+  const refreshUser = async () => {
+    const {
+      data: { user },
+      error,
+    } = await supabase.auth.getUser();
+
+    if (error) {
+      console.error("Unable to refresh profile:", error);
+      return;
+    }
+
+    setUser(user);
+  };
+
+  // =====================================================
+  // SIGN OUT
+  // =====================================================
+
   const handleSignOut = async () => {
     const { error } = await supabase.auth.signOut();
 
@@ -61,21 +88,36 @@ function ProfileMenu() {
     navigate("/signin");
   };
 
+  // =====================================================
+  // NO USER
+  // =====================================================
+
   if (!user) {
     return null;
   }
 
+  // =====================================================
+  // USER INFORMATION
+  // =====================================================
+
   const email = user.email || "User";
 
-  // Use first letter of email as temporary avatar
   const avatarLetter = email.charAt(0).toUpperCase();
+
+  const avatarUrl = user.user_metadata?.avatar_url || "";
 
   return (
     <div ref={menuRef} className="relative">
-      {/* Profile Button */}
+      {/* =================================================
+          PROFILE BUTTON
+      ================================================== */}
+
       <button
         type="button"
-        onClick={() => setIsOpen((prev) => !prev)}
+        onClick={async () => {
+          await refreshUser();
+          setIsOpen((prev) => !prev);
+        }}
         className="
           flex items-center gap-2.5
           rounded-xl
@@ -95,21 +137,35 @@ function ProfileMenu() {
         aria-label="Open profile menu"
       >
         {/* Avatar */}
-        <span
+
+        <div
           className="
             flex h-8 w-8
+            shrink-0
             items-center justify-center
+            overflow-hidden
             rounded-lg
             bg-emerald-500
             text-sm font-bold
             text-white
-            shadow-sm
           "
         >
-          {avatarLetter}
-        </span>
+          {avatarUrl ? (
+            <img
+              src={avatarUrl}
+              alt="Profile"
+              className="h-full w-full object-cover"
+              onError={(e) => {
+                e.currentTarget.style.display = "none";
+              }}
+            />
+          ) : (
+            avatarLetter
+          )}
+        </div>
 
         {/* User Information */}
+
         <span className="hidden max-w-[150px] text-left sm:block">
           <span
             className="
@@ -134,23 +190,29 @@ function ProfileMenu() {
           </span>
         </span>
 
+        {/* Arrow */}
+
         <FaChevronDown
           className={`
-            hidden text-[10px] text-gray-400
-            transition-transform duration-200
+            hidden
+            text-[10px]
+            text-gray-400
+            transition-transform
             sm:block
             ${isOpen ? "rotate-180" : ""}
           `}
         />
       </button>
 
-      {/* Dropdown */}
+      {/* =================================================
+          DROPDOWN
+      ================================================== */}
+
       {isOpen && (
         <div
           className="
             absolute right-0 top-full z-[100]
-            mt-2
-            w-64
+            mt-2 w-64
             overflow-hidden
             rounded-2xl
             border border-gray-200
@@ -163,7 +225,10 @@ function ProfileMenu() {
             dark:shadow-black/30
           "
         >
-          {/* User Header */}
+          {/* =================================================
+              USER HEADER
+          ================================================== */}
+
           <div
             className="
               border-b border-gray-100
@@ -175,19 +240,35 @@ function ProfileMenu() {
             "
           >
             <div className="flex items-center gap-3">
+              {/* Larger Avatar */}
+
               <div
                 className="
                   flex h-10 w-10
                   shrink-0
                   items-center justify-center
+                  overflow-hidden
                   rounded-xl
                   bg-emerald-500
                   text-sm font-bold
                   text-white
                 "
               >
-                {avatarLetter}
+                {avatarUrl ? (
+                  <img
+                    src={avatarUrl}
+                    alt="Profile"
+                    className="h-full w-full object-cover"
+                    onError={(e) => {
+                      e.currentTarget.style.display = "none";
+                    }}
+                  />
+                ) : (
+                  avatarLetter
+                )}
               </div>
+
+              {/* User Details */}
 
               <div className="min-w-0">
                 <p
@@ -208,8 +289,13 @@ function ProfileMenu() {
             </div>
           </div>
 
-          {/* Menu Items */}
+          {/* =================================================
+              MENU ITEMS
+          ================================================== */}
+
           <div className="p-2">
+            {/* My Profile */}
+
             <button
               type="button"
               onClick={() => {
@@ -225,6 +311,7 @@ function ProfileMenu() {
                 text-sm font-medium
                 text-gray-600
                 transition
+
                 hover:bg-gray-50
                 hover:text-gray-900
 
@@ -250,50 +337,16 @@ function ProfileMenu() {
 
               <span>My Profile</span>
             </button>
-
-            <button
-              type="button"
-              onClick={() => setIsOpen(false)}
-              className="
-                flex w-full
-                items-center gap-3
-                rounded-xl
-                px-3 py-3
-                text-left
-                text-sm font-medium
-                text-gray-600
-                transition
-                hover:bg-gray-50
-                hover:text-gray-900
-
-                dark:text-gray-300
-                dark:hover:bg-gray-800
-                dark:hover:text-white
-              "
-            >
-              <span
-                className="
-                  flex h-8 w-8
-                  items-center justify-center
-                  rounded-lg
-                  bg-gray-100
-                  text-gray-500
-
-                  dark:bg-gray-800
-                  dark:text-gray-400
-                "
-              >
-                <FaCog />
-              </span>
-
-              <span>Settings</span>
-            </button>
           </div>
 
-          {/* Sign Out */}
+          {/* =================================================
+              SIGN OUT
+          ================================================== */}
+
           <div
             className="
-              border-t border-gray-100
+              border-t
+              border-gray-100
               p-2
 
               dark:border-gray-800
@@ -311,6 +364,7 @@ function ProfileMenu() {
                 text-sm font-semibold
                 text-red-500
                 transition
+
                 hover:bg-red-50
                 hover:text-red-600
 

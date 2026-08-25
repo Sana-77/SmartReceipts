@@ -3,8 +3,7 @@ import { FaRobot, FaPaperPlane, FaTimes, FaTrash } from "react-icons/fa";
 
 import { chatWithAI } from "../services/aiService";
 
-function AIChat({ expenses, budget, total, isOpen, onClose }) {
-  //const [isOpen, setIsOpen] = useState(false);
+function AIChat({ expenses, budget, total, isOpen, onOpen, onClose }) {
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -18,19 +17,21 @@ function AIChat({ expenses, budget, total, isOpen, onClose }) {
 
   const messagesEndRef = useRef(null);
 
-  // --------------------------------
-  // Scroll to latest message
-  // --------------------------------
+  // =====================================================
+  // SCROLL TO LATEST MESSAGE
+  // =====================================================
 
   useEffect(() => {
+    if (!isOpen) return;
+
     messagesEndRef.current?.scrollIntoView({
       behavior: "smooth",
     });
-  }, [messages, isLoading]);
+  }, [messages, isLoading, isOpen]);
 
-  // --------------------------------
-  // Send Message
-  // --------------------------------
+  // =====================================================
+  // SEND MESSAGE
+  // =====================================================
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
@@ -39,7 +40,6 @@ function AIChat({ expenses, budget, total, isOpen, onClose }) {
 
     if (!userMessage || isLoading) return;
 
-    // Add user's message immediately
     setMessages((prev) => [
       ...prev,
       {
@@ -82,9 +82,9 @@ function AIChat({ expenses, budget, total, isOpen, onClose }) {
     }
   };
 
-  // --------------------------------
-  // Clear Chat
-  // --------------------------------
+  // =====================================================
+  // CLEAR CHAT
+  // =====================================================
 
   const handleClearChat = () => {
     setMessages([
@@ -96,9 +96,9 @@ function AIChat({ expenses, budget, total, isOpen, onClose }) {
     ]);
   };
 
-  // --------------------------------
-  // Suggested Questions
-  // --------------------------------
+  // =====================================================
+  // SUGGESTIONS
+  // =====================================================
 
   const suggestedQuestions = [
     "What is my biggest expense?",
@@ -113,83 +113,146 @@ function AIChat({ expenses, budget, total, isOpen, onClose }) {
 
   return (
     <>
-      {/* --------------------------------
-          Floating AI Button
-      -------------------------------- */}
+      {/* =================================================
+          FLOATING AI BUTTON
+      ================================================== */}
 
       {!isOpen && (
         <button
           type="button"
-          onClick={() => setIsOpen(true)}
+          onClick={onOpen}
           className="
-            fixed bottom-6 right-6 z-50
-            flex h-16 w-16
-            items-center justify-center
-            rounded-full
-            bg-emerald-600
+            fixed
+            bottom-6
+            right-6
+            z-[90]
+
+            flex
+            h-14
+            w-14
+            items-center
+            justify-center
+
+            rounded-2xl
+
+            bg-emerald-500
             text-white
+
             shadow-xl
-            transition
-            duration-300
-            hover:scale-110
-            hover:bg-emerald-700
+            shadow-emerald-500/20
+
+            transition-all
+            duration-200
+
+            hover:-translate-y-1
+            hover:bg-emerald-400
+            hover:shadow-2xl
+
+            focus:outline-none
+            focus:ring-4
+            focus:ring-emerald-500/20
+
+            dark:bg-emerald-500
+            dark:hover:bg-emerald-400
           "
-          aria-label="Open AI companion"
+          aria-label="Open SmartReceipts AI"
           title="Open SmartReceipts AI"
         >
-          <FaRobot className="text-2xl" />
+          <FaRobot className="text-xl" />
         </button>
       )}
 
-      {/* --------------------------------
-          Chat Window
-      -------------------------------- */}
+      {/* =================================================
+          CHAT WINDOW
+      ================================================== */}
 
       {isOpen && (
         <div
           className="
-            fixed bottom-6 right-6 z-50
-            flex h-[600px] w-[380px]
+            fixed
+            bottom-6
+            right-6
+            z-[100]
+
+            flex
+            h-[600px]
+            w-[380px]
             max-w-[calc(100vw-2rem)]
             flex-col
+
             overflow-hidden
             rounded-3xl
-            border border-gray-200
+
+            border
+            border-gray-200
             bg-white
+
             shadow-2xl
+
             dark:border-gray-700
             dark:bg-gray-900
           "
         >
-          {/* --------------------------------
-              Header
-          -------------------------------- */}
+          {/* =================================================
+              HEADER
+          ================================================== */}
 
-          <div className="flex items-center justify-between bg-emerald-600 px-5 py-4 text-white">
+          <div
+            className="
+              flex
+              items-center
+              justify-between
+
+              bg-emerald-500
+              px-5
+              py-4
+              text-white
+            "
+          >
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/20">
+              <div
+                className="
+                  flex
+                  h-10
+                  w-10
+                  items-center
+                  justify-center
+                  rounded-xl
+                  bg-white/15
+                "
+              >
                 <FaRobot />
               </div>
 
               <div>
                 <h2 className="font-semibold">SmartReceipts AI</h2>
 
-                <p className="text-xs text-emerald-100">
+                <p className="text-xs text-emerald-50">
                   Your financial companion
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
+              {/* Clear */}
+
               <button
                 type="button"
                 onClick={handleClearChat}
                 className="
-                  flex h-9 w-9
-                  items-center justify-center
-                  rounded-full
+                  flex
+                  h-9
+                  w-9
+                  items-center
+                  justify-center
+                  rounded-xl
+
+                  text-white/80
+
                   transition
-                  hover:bg-white/20
+
+                  hover:bg-white/15
+                  hover:text-white
                 "
                 title="Clear chat"
                 aria-label="Clear chat"
@@ -197,15 +260,29 @@ function AIChat({ expenses, budget, total, isOpen, onClose }) {
                 <FaTrash className="text-sm" />
               </button>
 
+              {/* Close */}
+
               <button
                 type="button"
-                onClick={() => setIsOpen(false)}
+                onClick={onClose}
                 className="
-                  flex h-9 w-9
-                  items-center justify-center
-                  rounded-full
+                  flex
+                  h-9
+                  w-9
+                  items-center
+                  justify-center
+                  rounded-xl
+
+                  text-white/80
+
                   transition
-                  hover:bg-white/20
+
+                  hover:bg-white/15
+                  hover:text-white
+
+                  focus:outline-none
+                  focus:ring-2
+                  focus:ring-white/40
                 "
                 title="Close chat"
                 aria-label="Close chat"
@@ -215,11 +292,22 @@ function AIChat({ expenses, budget, total, isOpen, onClose }) {
             </div>
           </div>
 
-          {/* --------------------------------
-              Messages
-          -------------------------------- */}
+          {/* =================================================
+              MESSAGES
+          ================================================== */}
 
-          <div className="flex-1 space-y-4 overflow-y-auto bg-gray-50 p-4 dark:bg-gray-950">
+          <div
+            className="
+              flex-1
+              space-y-4
+              overflow-y-auto
+
+              bg-gray-50
+              p-4
+
+              dark:bg-gray-950
+            "
+          >
             {messages.map((msg, index) => (
               <div
                 key={index}
@@ -230,7 +318,7 @@ function AIChat({ expenses, budget, total, isOpen, onClose }) {
                 <div
                   className={`max-w-[85%] whitespace-pre-wrap rounded-2xl px-4 py-3 text-sm leading-relaxed ${
                     msg.role === "user"
-                      ? "rounded-br-md bg-emerald-600 text-white"
+                      ? "rounded-br-md bg-emerald-500 text-white"
                       : "rounded-bl-md bg-white text-gray-700 shadow-sm dark:bg-gray-800 dark:text-gray-200"
                   }`}
                 >
@@ -239,15 +327,23 @@ function AIChat({ expenses, budget, total, isOpen, onClose }) {
               </div>
             ))}
 
-            {/* --------------------------------
-                Loading
-            -------------------------------- */}
+            {/* Loading */}
 
             {isLoading && (
               <div className="flex justify-start">
-                <div className="rounded-2xl rounded-bl-md bg-white px-4 py-3 shadow-sm dark:bg-gray-800">
+                <div
+                  className="
+                    rounded-2xl
+                    rounded-bl-md
+                    bg-white
+                    px-4
+                    py-3
+                    shadow-sm
+                    dark:bg-gray-800
+                  "
+                >
                   <div className="flex items-center gap-2">
-                    <FaRobot className="text-emerald-600" />
+                    <FaRobot className="text-emerald-500" />
 
                     <div className="flex gap-1">
                       <span className="h-2 w-2 animate-bounce rounded-full bg-gray-400" />
@@ -270,12 +366,23 @@ function AIChat({ expenses, budget, total, isOpen, onClose }) {
             <div ref={messagesEndRef} />
           </div>
 
-          {/* --------------------------------
-              Suggestions
-          -------------------------------- */}
+          {/* =================================================
+              SUGGESTIONS
+          ================================================== */}
 
           {messages.length === 1 && !isLoading && (
-            <div className="border-t border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-900">
+            <div
+              className="
+                border-t
+                border-gray-200
+                bg-white
+                px-4
+                py-3
+
+                dark:border-gray-700
+                dark:bg-gray-900
+              "
+            >
               <p className="mb-2 text-xs font-medium text-gray-500 dark:text-gray-400">
                 Try asking:
               </p>
@@ -297,8 +404,11 @@ function AIChat({ expenses, budget, total, isOpen, onClose }) {
                       text-xs
                       font-medium
                       text-emerald-700
+
                       transition
+
                       hover:bg-emerald-100
+
                       dark:border-emerald-800
                       dark:bg-emerald-950/40
                       dark:text-emerald-300
@@ -311,18 +421,22 @@ function AIChat({ expenses, budget, total, isOpen, onClose }) {
             </div>
           )}
 
-          {/* --------------------------------
-              Input
-          -------------------------------- */}
+          {/* =================================================
+              INPUT
+          ================================================== */}
 
           <form
             onSubmit={handleSendMessage}
             className="
-              flex items-center gap-2
+              flex
+              items-center
+              gap-2
+
               border-t
               border-gray-200
               bg-white
               p-3
+
               dark:border-gray-700
               dark:bg-gray-900
             "
@@ -337,16 +451,27 @@ function AIChat({ expenses, budget, total, isOpen, onClose }) {
                 min-w-0
                 flex-1
                 rounded-xl
+
                 border
                 border-gray-300
+
                 bg-gray-50
+
                 px-4
                 py-3
+
                 text-sm
                 text-gray-800
+
                 outline-none
                 transition
+
+                placeholder:text-gray-400
+
                 focus:border-emerald-500
+                focus:ring-4
+                focus:ring-emerald-500/10
+
                 dark:border-gray-700
                 dark:bg-gray-800
                 dark:text-gray-100
@@ -358,21 +483,39 @@ function AIChat({ expenses, budget, total, isOpen, onClose }) {
               type="submit"
               disabled={isLoading || !message.trim()}
               className="
-                flex h-12 w-12
+                flex
+                h-12
+                w-12
                 shrink-0
-                items-center justify-center
+                items-center
+                justify-center
+
                 rounded-xl
-                bg-emerald-600
+
+                bg-emerald-500
                 text-white
+
                 transition
-                hover:bg-emerald-700
+
+                hover:bg-emerald-400
+
                 disabled:cursor-not-allowed
                 disabled:bg-gray-400
               "
               aria-label="Send message"
             >
               {isLoading ? (
-                <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                <div
+                  className="
+                    h-5
+                    w-5
+                    animate-spin
+                    rounded-full
+                    border-2
+                    border-white
+                    border-t-transparent
+                  "
+                />
               ) : (
                 <FaPaperPlane />
               )}

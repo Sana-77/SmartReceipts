@@ -1,286 +1,356 @@
 import { useState } from "react";
 import {
   FaHome,
-  FaWallet,
-  FaRobot,
-  FaChartBar,
   FaReceipt,
+  FaChartBar,
   FaFileExport,
-  FaBars,
+  FaRobot,
+  FaWallet,
+  FaCog,
+  FaQuestionCircle,
   FaTimes,
+  FaBars,
 } from "react-icons/fa";
 
-import ThemeToggle from "./ThemeToggle";
-import ProfileMenu from "./ProfileMenu";
+function DashboardNav({ onOpenAI, onAddExpense, onOpenBudget }) {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
-function DashboardNav() {
-  const [mobileOpen, setMobileOpen] = useState(false);
-
-  // =====================================================
-  // NAVIGATION ITEMS
-  // =====================================================
-
-  const navItems = [
+  const navigationGroups = [
     {
-      id: "overview",
-      label: "Dashboard",
-      icon: <FaHome />,
+      title: "Main",
+      items: [
+        {
+          id: "overview",
+          label: "Overview",
+          icon: <FaHome />,
+        },
+        {
+          id: "expenses",
+          label: "Expenses",
+          icon: <FaReceipt />,
+        },
+        {
+          id: "add-expense",
+          label: "Add Receipt",
+          icon: <FaReceipt />,
+          action: "addExpense",
+        },
+        {
+          id: "analytics",
+          label: "Analytics",
+          icon: <FaChartBar />,
+        },
+      ],
     },
     {
-      id: "budget",
-      label: "Budget",
-      icon: <FaWallet />,
+      title: "Intelligence",
+      items: [
+        {
+          id: "insights",
+          label: "AI Insights",
+          icon: <FaRobot />,
+        },
+        {
+          id: "budget",
+          label: "Budget",
+          icon: <FaWallet />,
+          action: "openBudget",
+        },
+        {
+          id: "ai-chat",
+          label: "AI Assistant",
+          icon: <FaRobot />,
+          action: "openAI",
+        },
+      ],
     },
     {
-      id: "insights",
-      label: "AI Insights",
-      icon: <FaRobot />,
-    },
-    {
-      id: "analytics",
-      label: "Analytics",
-      icon: <FaChartBar />,
-    },
-    {
-      id: "expenses",
-      label: "Expenses",
-      icon: <FaReceipt />,
-    },
-    {
-      id: "export",
-      label: "Export",
-      icon: <FaFileExport />,
+      title: "Management",
+      items: [
+        {
+          id: "export",
+          label: "Export",
+          icon: <FaFileExport />,
+        },
+      ],
     },
   ];
 
-  // =====================================================
-  // NAVIGATION
-  // =====================================================
+  const handleNavigation = (item) => {
+    if (item.action === "openAI") {
+      onOpenAI?.();
+      setSidebarOpen(false);
+      return;
+    }
 
-  const handleNavigation = (id) => {
-    const section = document.getElementById(id);
+    if (item.action === "addExpense") {
+      onAddExpense?.();
+      setSidebarOpen(false);
+      return;
+    }
 
-    if (section) {
-      section.scrollIntoView({
+    if (item.action === "openBudget") {
+      onOpenBudget?.();
+      setSidebarOpen(false);
+      return;
+    }
+
+    const element = document.getElementById(item.id);
+
+    if (element) {
+      element.scrollIntoView({
         behavior: "smooth",
         block: "start",
       });
     }
 
-    setMobileOpen(false);
+    setSidebarOpen(false);
   };
 
   return (
-    <nav
-      className="
-        sticky top-4 z-50
-        rounded-2xl
-        border border-gray-200
-        bg-white/95
-        shadow-sm
-        backdrop-blur-xl
-        transition-all duration-300
+    <>
+      {/* MOBILE MENU BUTTON */}
 
-        dark:border-gray-800
-        dark:bg-[#101917]/95
-      "
-    >
-      {/* =================================================
-          MAIN NAVIGATION BAR
-      ================================================== */}
+      <button
+        type="button"
+        aria-label="Open navigation"
+        aria-expanded={sidebarOpen}
+        onClick={() => setSidebarOpen(true)}
+        className="
+          fixed left-4 top-4 z-[90]
+          flex h-10 w-10
+          items-center justify-center
+          rounded-xl
+          border border-gray-200
+          bg-white
+          text-gray-700
+          shadow-sm
+          lg:hidden
+          dark:border-gray-700
+          dark:bg-gray-900
+          dark:text-gray-200
+        "
+      >
+        <FaBars />
+      </button>
 
-      <div className="flex h-16 items-center justify-between px-4 sm:px-5">
-        {/* =================================================
-            BRAND
-        ================================================== */}
+      {/* MOBILE OVERLAY */}
 
+      {sidebarOpen && (
         <button
           type="button"
-          onClick={() => handleNavigation("overview")}
-          className="flex items-center gap-2.5"
-        >
-          {/* Logo */}
-          <div
-            className="
-              flex h-9 w-9
-              items-center justify-center
-              rounded-xl
-              bg-emerald-500
-              text-sm font-bold
-              text-white
-              shadow-sm
-            "
-          >
-            S
-          </div>
-
-          {/* Brand Text */}
-          <div className="hidden sm:block">
-            <p className="text-sm font-bold tracking-tight text-gray-900 dark:text-white">
-              Smart<span className="text-emerald-500">Receipts</span>
-            </p>
-
-            <p className="text-[10px] font-medium uppercase tracking-wider text-gray-400">
-              Financial workspace
-            </p>
-          </div>
-        </button>
-
-        {/* =================================================
-            DESKTOP NAVIGATION
-        ================================================== */}
-
-        <div className="hidden items-center gap-1 lg:flex">
-          {navItems.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => handleNavigation(item.id)}
-              className="
-                group
-                flex items-center gap-2
-                rounded-xl
-                px-3.5 py-2.5
-                text-sm font-medium
-                text-gray-500
-                transition-all duration-200
-                hover:bg-emerald-50
-                hover:text-emerald-600
-
-                dark:text-gray-400
-                dark:hover:bg-emerald-950/40
-                dark:hover:text-emerald-400
-              "
-            >
-              <span
-                className="
-                  text-gray-400
-                  transition-colors
-                  group-hover:text-emerald-500
-
-                  dark:text-gray-500
-                  dark:group-hover:text-emerald-400
-                "
-              >
-                {item.icon}
-              </span>
-
-              {item.label}
-            </button>
-          ))}
-        </div>
-
-        {/* =================================================
-            RIGHT SIDE
-        ================================================== */}
-
-        <div className="flex items-center gap-2">
-          {/* Theme Toggle */}
-          <div className="hidden sm:block">
-            <ThemeToggle />
-          </div>
-
-          {/* Profile Menu */}
-          <ProfileMenu />
-
-          {/* Mobile Menu Button */}
-          <button
-            type="button"
-            onClick={() => setMobileOpen((prev) => !prev)}
-            className="
-              flex h-10 w-10
-              items-center justify-center
-              rounded-xl
-              border border-gray-200
-              bg-gray-50
-              text-gray-600
-              transition
-              hover:bg-gray-100
-
-              dark:border-gray-700
-              dark:bg-gray-800
-              dark:text-gray-300
-              dark:hover:bg-gray-700
-
-              lg:hidden
-            "
-            aria-label="Toggle navigation"
-            aria-expanded={mobileOpen}
-          >
-            {mobileOpen ? <FaTimes /> : <FaBars />}
-          </button>
-        </div>
-      </div>
-
-      {/* =====================================================
-          MOBILE NAVIGATION
-      ====================================================== */}
-
-      {mobileOpen && (
-        <div
+          aria-label="Close navigation"
+          onClick={() => setSidebarOpen(false)}
           className="
-            border-t
-            border-gray-200
-            px-3
-            pb-3
-            pt-3
-
-            dark:border-gray-800
+            fixed inset-0 z-[70]
+            bg-black/50
+            backdrop-blur-sm
             lg:hidden
           "
-        >
-          {/* Navigation Items */}
+        />
+      )}
 
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-            {navItems.map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => handleNavigation(item.id)}
-                className="
-                  flex items-center gap-2
-                  rounded-xl
-                  px-3 py-3
-                  text-left
-                  text-sm font-medium
-                  text-gray-600
-                  transition
+      {/* SIDEBAR */}
 
-                  hover:bg-emerald-50
-                  hover:text-emerald-600
+      <aside
+        className={`
+          fixed left-0 top-0 z-[80]
+          flex h-screen w-[250px]
+          flex-col
+          border-r border-emerald-950
+          bg-[#031815]
+          text-white
+          shadow-2xl
+          transition-transform duration-300
+          lg:translate-x-0
+          ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
+        `}
+      >
+        {/* BRAND */}
 
-                  dark:text-gray-300
-                  dark:hover:bg-gray-800
-                  dark:hover:text-emerald-400
-                "
-              >
-                <span className="text-emerald-500">{item.icon}</span>
+        <div className="flex shrink-0 items-center justify-between px-5 pb-6 pt-6">
+          <button
+            type="button"
+            onClick={() =>
+              handleNavigation({
+                id: "overview",
+              })
+            }
+            className="flex items-center gap-3"
+          >
+            <div
+              className="
+                flex h-10 w-10 shrink-0
+                items-center justify-center
+                rounded-xl
+                bg-emerald-500
+                text-lg font-black
+                text-white
+                shadow-lg
+                shadow-emerald-500/20
+              "
+            >
+              S
+            </div>
 
-                {item.label}
-              </button>
-            ))}
-          </div>
+            <div className="text-left">
+              <p className="text-lg font-bold tracking-tight">
+                Smart<span className="text-emerald-400">Receipts</span>
+              </p>
 
-          {/* =================================================
-              MOBILE THEME TOGGLE
-          ================================================== */}
+              <p className="text-[9px] uppercase tracking-wider text-gray-400">
+                Smarter expenses. Better decisions.
+              </p>
+            </div>
+          </button>
 
-          <div
+          {/* MOBILE CLOSE */}
+
+          <button
+            type="button"
+            aria-label="Close navigation"
+            onClick={() => setSidebarOpen(false)}
             className="
-              mt-3
-              border-t
-              border-gray-200
-              pt-3
-
-              dark:border-gray-800
-              sm:hidden
+              flex h-8 w-8
+              items-center justify-center
+              rounded-lg
+              text-gray-400
+              hover:bg-emerald-950
+              hover:text-white
+              lg:hidden
             "
           >
-            <ThemeToggle />
+            <FaTimes />
+          </button>
+        </div>
+
+        {/* NAVIGATION */}
+
+        <div
+          className="
+            min-h-0
+            flex-1
+            overflow-y-auto
+            px-4
+            pb-4
+            scrollbar-thin
+            scrollbar-track-transparent
+            scrollbar-thumb-emerald-950
+          "
+        >
+          {navigationGroups.map((group) => (
+            <div key={group.title} className="mb-7">
+              <p
+                className="
+                  mb-3 px-2
+                  text-[10px]
+                  font-semibold
+                  uppercase
+                  tracking-[0.16em]
+                  text-gray-500
+                "
+              >
+                {group.title}
+              </p>
+
+              <div className="space-y-1">
+                {group.items.map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => handleNavigation(item)}
+                    className="
+                      flex w-full
+                      items-center gap-3
+                      rounded-xl
+                      px-3 py-3
+                      text-sm font-medium
+                      text-gray-300
+                      transition-all
+                      hover:bg-emerald-950/80
+                      hover:text-white
+                    "
+                  >
+                    <span
+                      className="
+                        flex w-5
+                        items-center justify-center
+                        text-gray-400
+                        transition-colors
+                        group-hover:text-emerald-400
+                      "
+                    >
+                      {item.icon}
+                    </span>
+
+                    <span>{item.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))}
+
+          {/* SETTINGS */}
+
+          <div className="mb-7">
+            <p
+              className="
+                mb-3 px-2
+                text-[10px]
+                font-semibold
+                uppercase
+                tracking-[0.16em]
+                text-gray-500
+              "
+            >
+              Settings
+            </p>
+
+            <div className="space-y-1">
+              <button
+                type="button"
+                className="
+                  flex w-full
+                  items-center gap-3
+                  rounded-xl
+                  px-3 py-3
+                  text-sm font-medium
+                  text-gray-300
+                  transition
+                  hover:bg-emerald-950/80
+                  hover:text-white
+                "
+              >
+                <span className="flex w-5 justify-center text-gray-400">
+                  <FaCog />
+                </span>
+                Settings
+              </button>
+
+              <button
+                type="button"
+                className="
+                  flex w-full
+                  items-center gap-3
+                  rounded-xl
+                  px-3 py-3
+                  text-sm font-medium
+                  text-gray-300
+                  transition
+                  hover:bg-emerald-950/80
+                  hover:text-white
+                "
+              >
+                <span className="flex w-5 justify-center text-gray-400">
+                  <FaQuestionCircle />
+                </span>
+                Help & Support
+              </button>
+            </div>
           </div>
         </div>
-      )}
-    </nav>
+      </aside>
+    </>
   );
 }
 

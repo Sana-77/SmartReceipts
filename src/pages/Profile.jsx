@@ -71,13 +71,13 @@ function Profile() {
     setError("");
     setSuccess("");
 
-    // Only allow images
+    // Validate file type
     if (!file.type.startsWith("image/")) {
       setError("Please select an image file.");
       return;
     }
 
-    // Limit to 2 MB
+    // Maximum 2 MB
     if (file.size > 2 * 1024 * 1024) {
       setError("Profile photo must be smaller than 2 MB.");
       return;
@@ -86,28 +86,36 @@ function Profile() {
     setIsUploading(true);
 
     try {
-      const fileExt = file.name.split(".").pop();
+      // One permanent avatar path for each user
+      const filePath = `${user.id}/avatar`;
 
-      const filePath = `${user.id}/avatar.${fileExt}`;
-
+      // Upload / replace existing avatar
       const { error: uploadError } = await supabase.storage
         .from("avatars")
         .upload(filePath, file, {
           upsert: true,
           contentType: file.type,
+          cacheControl: "3600",
         });
 
       if (uploadError) {
         throw uploadError;
       }
 
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from("avatars").getPublicUrl(filePath);
+      // Get public URL
+      const { data: publicUrlData } = supabase.storage
+        .from("avatars")
+        .getPublicUrl(filePath);
 
+      const publicUrl = publicUrlData.publicUrl;
+
+      // Add cache-busting timestamp
+      const avatarUrl = `${publicUrl}?t=${Date.now()}`;
+
+      // Save URL to Supabase Auth metadata
       const { data, error: updateError } = await supabase.auth.updateUser({
         data: {
-          avatar_url: publicUrl,
+          avatar_url: avatarUrl,
         },
       });
 
@@ -115,8 +123,10 @@ function Profile() {
         throw updateError;
       }
 
+      // Update local state immediately
       setUser(data.user);
-      setAvatarUrl(publicUrl);
+      setAvatarUrl(avatarUrl);
+
       setSuccess("Profile photo updated successfully.");
 
       setTimeout(() => {
@@ -127,6 +137,9 @@ function Profile() {
       setError(err.message || "Unable to upload profile photo.");
     } finally {
       setIsUploading(false);
+
+      // Allow selecting the same file again
+      e.target.value = "";
     }
   };
 
