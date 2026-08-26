@@ -12,7 +12,7 @@ import {
   FaLightbulb,
   FaPlus,
   FaRobot,
-  FaPaperPlane,
+  FaTimes,
 } from "react-icons/fa";
 
 import DashboardNav from "../components/DashboardNav";
@@ -29,6 +29,7 @@ import ExpenseCharts from "../components/ExpenseCharts";
 import BudgetCard from "../components/BudgetCard";
 import ExportButtons from "../components/ExportButtons";
 import AIChat from "../components/AIChat";
+import Footer from "../components/Footer";
 
 import { supabase } from "../lib/supabase";
 
@@ -55,6 +56,7 @@ function Dashboard() {
 
   const [isCategorizing, setIsCategorizing] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
   const [isBudgetModalOpen, setIsBudgetModalOpen] = useState(false);
@@ -137,6 +139,42 @@ function Dashboard() {
   }, [error]);
 
   // =====================================================
+  // OPEN EXPENSE MODAL
+  // =====================================================
+
+  const openExpenseModal = () => {
+    setEditingExpense(null);
+    setError("");
+    setIsExpenseModalOpen(true);
+  };
+
+  // =====================================================
+  // CLOSE EXPENSE MODAL
+  // =====================================================
+
+  const closeExpenseModal = () => {
+    setIsExpenseModalOpen(false);
+    setEditingExpense(null);
+  };
+
+  // =====================================================
+  // OPEN BUDGET MODAL
+  // =====================================================
+
+  const openBudgetModal = () => {
+    setError("");
+    setIsBudgetModalOpen(true);
+  };
+
+  // =====================================================
+  // CLOSE BUDGET MODAL
+  // =====================================================
+
+  const closeBudgetModal = () => {
+    setIsBudgetModalOpen(false);
+  };
+
+  // =====================================================
   // ADD EXPENSE
   // =====================================================
 
@@ -155,12 +193,14 @@ function Dashboard() {
       });
 
       setExpenses((prev) => [...prev, newExpense]);
+
+      closeExpenseModal();
     } catch (err) {
       console.error("AI categorization failed:", err);
 
       /*
-       * AI failure should not prevent the user
-       * from saving the expense.
+       * AI failure should not prevent the expense
+       * from being saved.
        */
 
       try {
@@ -176,6 +216,8 @@ function Dashboard() {
         setError(
           "AI categorization was unavailable. The expense was saved as Miscellaneous.",
         );
+
+        closeExpenseModal();
       } catch (supabaseError) {
         console.error("Failed to save expense:", supabaseError);
 
@@ -184,7 +226,6 @@ function Dashboard() {
     } finally {
       setIsCategorizing(false);
     }
-    setIsExpenseModalOpen(false);
   };
 
   // =====================================================
@@ -194,12 +235,7 @@ function Dashboard() {
   const handleEditExpense = (expense) => {
     setEditingExpense(expense);
     setError("");
-
-    document.getElementById("expense-form")?.scrollIntoView({
-      behavior: "smooth",
-      block: "start",
-    });
-    setIsExpenseModalOpen(false);
+    setIsExpenseModalOpen(true);
   };
 
   // =====================================================
@@ -216,7 +252,7 @@ function Dashboard() {
         prev.map((expense) => (expense.id === id ? updatedExpense : expense)),
       );
 
-      setEditingExpense(null);
+      closeExpenseModal();
     } catch (err) {
       console.error("Failed to update expense:", err);
 
@@ -407,52 +443,52 @@ function Dashboard() {
   return (
     <main
       className="
-      min-h-screen
-      bg-[#f6f8f7]
-      text-gray-900
-      transition-colors
-      duration-300
-      dark:bg-[#080f0d]
-      dark:text-gray-100
-    "
+        min-h-screen
+        bg-[#f6f8f7]
+        text-gray-900
+        transition-colors
+        duration-300
+        dark:bg-[#080f0d]
+        dark:text-gray-100
+      "
     >
       {/* =====================================================
-        DASHBOARD NAVIGATION
-    ===================================================== */}
+          DASHBOARD NAVIGATION
+      ===================================================== */}
 
       <DashboardNav
         onOpenAI={() => setIsChatOpen(true)}
-        onAddExpense={() => setIsExpenseModalOpen(true)}
-        onOpenBudget={() => setIsBudgetModalOpen(true)}
+        onAddExpense={openExpenseModal}
+        onOpenBudget={openBudgetModal}
       />
 
       {/* =====================================================
-        MAIN CONTENT
-    ===================================================== */}
+          DASHBOARD AREA
+      ===================================================== */}
 
       <div className="min-h-screen lg:pl-[250px]">
         {/* =====================================================
-          TOP BAR
-      ===================================================== */}
+            TOP BAR
+        ===================================================== */}
 
         <header
           className="
-          sticky top-0 z-50
-          border-b border-gray-200/80
-          bg-white/90
-          backdrop-blur-xl
-          dark:border-gray-800
-          dark:bg-[#080f0d]/90
-        "
+            sticky top-0 z-50
+            border-b border-gray-200/80
+            bg-white/90
+            backdrop-blur-xl
+            dark:border-gray-800
+            dark:bg-[#080f0d]/90
+          "
         >
           <div
             className="
-            flex h-[74px]
-            items-center gap-4
-            px-4
-            sm:px-6
-            lg:px-8
-          "
+              flex h-[70px]
+              items-center gap-3
+              px-4
+              sm:px-5
+              lg:px-6
+            "
           >
             {/* MOBILE MENU */}
 
@@ -463,31 +499,31 @@ function Dashboard() {
                 window.dispatchEvent(new CustomEvent("open-dashboard-sidebar"))
               }
               className="
-              flex h-10 w-10
-              items-center justify-center
-              rounded-xl
-              border border-gray-200
-              bg-white
-              text-gray-600
-              lg:hidden
-              dark:border-gray-700
-              dark:bg-gray-900
-              dark:text-gray-300
-            "
+                flex h-10 w-10
+                items-center justify-center
+                rounded-xl
+                border border-gray-200
+                bg-white
+                text-gray-600
+                lg:hidden
+                dark:border-gray-700
+                dark:bg-gray-900
+                dark:text-gray-300
+              "
             >
               ☰
             </button>
 
             {/* SEARCH */}
 
-            <div className="relative max-w-xl flex-1">
+            <div className="relative max-w-2xl flex-1">
               <FaSearch
                 className="
-                pointer-events-none
-                absolute left-4 top-1/2
-                -translate-y-1/2
-                text-sm text-gray-400
-              "
+                  pointer-events-none
+                  absolute left-4 top-1/2
+                  -translate-y-1/2
+                  text-sm text-gray-400
+                "
               />
 
               <input
@@ -496,40 +532,40 @@ function Dashboard() {
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search expenses, categories, receipts..."
                 className="
-                h-11 w-full
-                rounded-xl
-                border border-gray-200
-                bg-white
-                pl-11 pr-16
-                text-sm
-                text-gray-700
-                outline-none
-                transition
-                focus:border-emerald-400
-                focus:ring-4
-                focus:ring-emerald-500/10
-                dark:border-gray-700
-                dark:bg-gray-900
-                dark:text-gray-200
-              "
+                  h-11 w-full
+                  rounded-xl
+                  border border-gray-200
+                  bg-white
+                  pl-11 pr-16
+                  text-sm
+                  text-gray-700
+                  outline-none
+                  transition
+                  focus:border-emerald-400
+                  focus:ring-4
+                  focus:ring-emerald-500/10
+                  dark:border-gray-700
+                  dark:bg-gray-900
+                  dark:text-gray-200
+                "
               />
 
               <span
                 className="
-                absolute right-3 top-1/2
-                hidden
-                -translate-y-1/2
-                rounded-md
-                border border-gray-200
-                bg-gray-50
-                px-2 py-1
-                text-[10px]
-                font-semibold
-                text-gray-400
-                sm:block
-                dark:border-gray-700
-                dark:bg-gray-800
-              "
+                  absolute right-3 top-1/2
+                  hidden
+                  -translate-y-1/2
+                  rounded-md
+                  border border-gray-200
+                  bg-gray-50
+                  px-2 py-1
+                  text-[10px]
+                  font-semibold
+                  text-gray-400
+                  sm:block
+                  dark:border-gray-700
+                  dark:bg-gray-800
+                "
               >
                 ⌘K
               </span>
@@ -538,7 +574,7 @@ function Dashboard() {
             {/* TOP ACTIONS */}
 
             <div className="ml-auto flex items-center gap-2 sm:gap-3">
-              {/* THEME TOGGLE */}
+              {/* THEME */}
 
               <div className="hidden sm:block">
                 <ThemeToggle />
@@ -550,33 +586,33 @@ function Dashboard() {
                 type="button"
                 aria-label="Notifications"
                 className="
-                relative
-                flex h-10 w-10
-                items-center justify-center
-                rounded-xl
-                text-gray-500
-                transition
-                hover:bg-gray-100
-                hover:text-gray-900
-                dark:text-gray-400
-                dark:hover:bg-gray-800
-                dark:hover:text-white
-              "
+                  relative
+                  flex h-10 w-10
+                  items-center justify-center
+                  rounded-xl
+                  text-gray-500
+                  transition
+                  hover:bg-gray-100
+                  hover:text-gray-900
+                  dark:text-gray-400
+                  dark:hover:bg-gray-800
+                  dark:hover:text-white
+                "
               >
                 <FaBell />
 
                 {expenses.length > 0 && (
                   <span
                     className="
-                    absolute right-1 top-1
-                    flex h-4 w-4
-                    items-center justify-center
-                    rounded-full
-                    bg-emerald-500
-                    text-[9px]
-                    font-bold
-                    text-white
-                  "
+                      absolute right-1 top-1
+                      flex h-4 w-4
+                      items-center justify-center
+                      rounded-full
+                      bg-emerald-500
+                      text-[9px]
+                      font-bold
+                      text-white
+                    "
                   >
                     {Math.min(expenses.length, 9)}
                   </span>
@@ -587,11 +623,11 @@ function Dashboard() {
 
               <div
                 className="
-                hidden h-7 w-px
-                bg-gray-200
-                dark:bg-gray-800
-                sm:block
-              "
+                  hidden h-7 w-px
+                  bg-gray-200
+                  dark:bg-gray-800
+                  sm:block
+                "
               />
 
               {/* PROFILE */}
@@ -602,66 +638,66 @@ function Dashboard() {
         </header>
 
         {/* =====================================================
-          CONTENT
-      ===================================================== */}
+            CONTENT
+        ===================================================== */}
 
         <div
           className="
-          mx-auto
-          max-w-[1280px]
-          px-4 py-6
-          sm:px-6
-          lg:px-8 lg:py-8
-        "
+            mx-auto
+            max-w-[1400px]
+            px-4 py-6
+            sm:px-5
+            lg:px-6 lg:py-7
+          "
         >
           {/* =================================================
-            GREETING
-        ================================================= */}
+              GREETING
+          ================================================= */}
 
-          <section id="overview" className="scroll-mt-28">
+          <section id="overview" className="scroll-mt-24">
             <div
               className="
-              mb-7
-              flex flex-col gap-5
-              lg:flex-row
-              lg:items-end
-              lg:justify-between
-            "
+                mb-7
+                flex flex-col gap-5
+                lg:flex-row
+                lg:items-end
+                lg:justify-between
+              "
             >
               <div>
                 <p
                   className="
-                  mb-2
-                  text-xs font-semibold
-                  uppercase tracking-[0.16em]
-                  text-emerald-600
-                  dark:text-emerald-400
-                "
+                    mb-2
+                    text-xs font-semibold
+                    uppercase tracking-[0.16em]
+                    text-emerald-600
+                    dark:text-emerald-400
+                  "
                 >
                   Financial workspace
                 </p>
 
                 <h1
                   className="
-                  text-3xl
-                  font-bold
-                  tracking-tight
-                  text-gray-950
-                  dark:text-white
-                  sm:text-4xl
-                "
+                    text-3xl
+                    font-bold
+                    tracking-tight
+                    text-gray-950
+                    dark:text-white
+                    sm:text-4xl
+                  "
                 >
                   {greeting}, {displayName}! 👋
                 </h1>
 
                 <p
                   className="
-                  mt-2
-                  text-sm
-                  text-gray-500
-                  dark:text-gray-400
-                  sm:text-base
-                "
+                    mt-2
+                    text-sm
+                    text-gray-500
+                    dark:text-gray-400
+                    sm:text-base
+                  "
                 >
                   {hasExpenses
                     ? "Here's what's happening with your finances today."
@@ -669,143 +705,200 @@ function Dashboard() {
                 </p>
               </div>
 
-              <button
-                type="button"
-                className="
-                flex w-fit
-                items-center gap-3
-                rounded-xl
-                border border-gray-200
-                bg-white
-                px-4 py-3
-                text-sm font-semibold
-                text-gray-700
-                shadow-sm
-                transition
-                hover:border-emerald-200
-                dark:border-gray-700
-                dark:bg-gray-900
-                dark:text-gray-200
-              "
-              >
-                <FaCalendarAlt className="text-emerald-500" />
+              <div className="flex flex-wrap items-center gap-3">
+                {/* ADD EXPENSE */}
 
-                <span>{today}</span>
+                <button
+                  type="button"
+                  onClick={openExpenseModal}
+                  className="
+                    flex items-center gap-2
+                    rounded-xl
+                    bg-emerald-500
+                    px-4 py-3
+                    text-sm font-bold
+                    text-[#031815]
+                    shadow-sm
+                    transition
+                    hover:bg-emerald-400
+                    focus:outline-none
+                    focus:ring-4
+                    focus:ring-emerald-500/20
+                  "
+                >
+                  <FaPlus />
+                  Add Expense
+                </button>
 
-                <FaChevronDown className="text-[10px] text-gray-400" />
-              </button>
+                {/* BUDGET */}
+
+                <button
+                  type="button"
+                  onClick={openBudgetModal}
+                  className="
+                    flex items-center gap-2
+                    rounded-xl
+                    border border-gray-200
+                    bg-white
+                    px-4 py-3
+                    text-sm font-semibold
+                    text-gray-700
+                    shadow-sm
+                    transition
+                    hover:border-emerald-200
+                    hover:bg-emerald-50
+                    dark:border-gray-700
+                    dark:bg-gray-900
+                    dark:text-gray-200
+                    dark:hover:border-emerald-800
+                    dark:hover:bg-emerald-950/30
+                  "
+                >
+                  <FaWallet className="text-emerald-500" />
+                  {budget > 0 ? "Manage Budget" : "Set Budget"}
+                </button>
+
+                {/* DATE */}
+
+                <button
+                  type="button"
+                  className="
+                    hidden
+                    items-center gap-3
+                    rounded-xl
+                    border border-gray-200
+                    bg-white
+                    px-4 py-3
+                    text-sm font-semibold
+                    text-gray-700
+                    shadow-sm
+                    transition
+                    hover:border-emerald-200
+                    dark:border-gray-700
+                    dark:bg-gray-900
+                    dark:text-gray-200
+                    lg:flex
+                  "
+                >
+                  <FaCalendarAlt className="text-emerald-500" />
+
+                  <span>{today}</span>
+
+                  <FaChevronDown className="text-[10px] text-gray-400" />
+                </button>
+              </div>
             </div>
           </section>
 
           {/* =====================================================
-            FIRST-TIME USER
-        ===================================================== */}
+              FIRST-TIME USER
+          ===================================================== */}
 
           {!hasExpenses ? (
             <>
               {/* =================================================
-                WELCOME CARD
-            ================================================= */}
+                  WELCOME CARD
+              ================================================= */}
 
               <section className="mt-2">
                 <div
                   className="
-                  overflow-hidden
-                  rounded-3xl
-                  border border-gray-200
-                  bg-white
-                  shadow-sm
-                  dark:border-gray-800
-                  dark:bg-[#101917]
-                "
+                    overflow-hidden
+                    rounded-3xl
+                    border border-gray-200
+                    bg-white
+                    shadow-sm
+                    dark:border-gray-800
+                    dark:bg-[#101917]
+                  "
                 >
                   <div
                     className="
-                    relative
-                    overflow-hidden
-                    px-6 py-10
-                    sm:px-10
-                    lg:px-14 lg:py-14
-                  "
+                      relative
+                      overflow-hidden
+                      px-6 py-10
+                      sm:px-10
+                      lg:px-14 lg:py-14
+                    "
                   >
                     {/* Decorative background */}
 
                     <div
                       className="
-                      pointer-events-none
-                      absolute -right-20 -top-20
-                      h-64 w-64
-                      rounded-full
-                      bg-emerald-500/10
-                      blur-3xl
-                    "
+                        pointer-events-none
+                        absolute -right-20 -top-20
+                        h-64 w-64
+                        rounded-full
+                        bg-emerald-500/10
+                        blur-3xl
+                      "
                     />
 
                     <div
                       className="
-                      pointer-events-none
-                      absolute -bottom-24 right-1/4
-                      h-48 w-48
-                      rounded-full
-                      bg-emerald-400/5
-                      blur-3xl
-                    "
+                        pointer-events-none
+                        absolute -bottom-24 right-1/4
+                        h-48 w-48
+                        rounded-full
+                        bg-emerald-400/5
+                        blur-3xl
+                      "
                     />
 
-                    <div className="relative max-w-2xl">
+                    <div className="relative max-w-3xl">
                       <div
                         className="
-                        flex h-14 w-14
-                        items-center justify-center
-                        rounded-2xl
-                        bg-emerald-500
-                        text-2xl
-                        text-white
-                        shadow-lg
-                        shadow-emerald-500/20
-                      "
+                          flex h-14 w-14
+                          items-center justify-center
+                          rounded-2xl
+                          bg-emerald-500
+                          text-2xl
+                          text-white
+                          shadow-lg
+                          shadow-emerald-500/20
+                        "
                       >
                         <FaReceipt />
                       </div>
 
                       <p
                         className="
-                        mt-6
-                        text-xs font-semibold
-                        uppercase tracking-[0.16em]
-                        text-emerald-600
-                        dark:text-emerald-400
-                      "
+                          mt-6
+                          text-xs font-semibold
+                          uppercase tracking-[0.16em]
+                          text-emerald-600
+                          dark:text-emerald-400
+                        "
                       >
                         Welcome to SmartReceipts
                       </p>
 
                       <h2
                         className="
-                        mt-3
-                        text-3xl font-bold
-                        tracking-tight
-                        text-gray-950
-                        dark:text-white
-                        sm:text-4xl
-                      "
+                          mt-3
+                          text-3xl font-bold
+                          tracking-tight
+                          text-gray-950
+                          dark:text-white
+                          sm:text-4xl
+                        "
                       >
                         Let&apos;s start tracking your spending.
                       </h2>
 
                       <p
                         className="
-                        mt-4
-                        max-w-xl
-                        text-sm leading-7
-                        text-gray-500
-                        dark:text-gray-400
-                        sm:text-base
-                      "
+                          mt-4
+                          max-w-xl
+                          text-sm leading-7
+                          text-gray-500
+                          dark:text-gray-400
+                          sm:text-base
+                        "
                       >
-                        Add your first receipt and SmartReceipts will organize
-                        your expenses, automatically categorize your purchases,
-                        and help you understand where your money is going.
+                        Add your expenses and SmartReceipts will organize your
+                        purchases, automatically categorize them with AI, and
+                        help you understand where your money is going.
                       </p>
 
                       {/* ACTIONS */}
@@ -813,54 +906,73 @@ function Dashboard() {
                       <div className="mt-7 flex flex-col gap-3 sm:flex-row">
                         <button
                           type="button"
-                          onClick={() =>
-                            document
-                              .getElementById("expense-form")
-                              ?.scrollIntoView({
-                                behavior: "smooth",
-                                block: "start",
-                              })
-                          }
+                          onClick={openExpenseModal}
                           className="
-                          flex w-fit
-                          items-center justify-center gap-2
-                          rounded-xl
-                          bg-emerald-500
-                          px-5 py-3
-                          text-sm font-bold
-                          text-[#031815]
-                          transition
-                          hover:bg-emerald-400
-                          focus:outline-none
-                          focus:ring-4
-                          focus:ring-emerald-500/20
-                        "
+                            flex w-fit
+                            items-center justify-center gap-2
+                            rounded-xl
+                            bg-emerald-500
+                            px-5 py-3
+                            text-sm font-bold
+                            text-[#031815]
+                            transition
+                            hover:bg-emerald-400
+                            focus:outline-none
+                            focus:ring-4
+                            focus:ring-emerald-500/20
+                          "
                         >
                           <FaPlus />
-                          Add Your First Receipt
+                          Add Your First Expense
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={openBudgetModal}
+                          className="
+                            flex w-fit
+                            items-center justify-center gap-2
+                            rounded-xl
+                            border border-gray-200
+                            bg-white
+                            px-5 py-3
+                            text-sm font-semibold
+                            text-gray-700
+                            transition
+                            hover:border-emerald-200
+                            hover:bg-emerald-50
+                            dark:border-gray-700
+                            dark:bg-gray-900
+                            dark:text-gray-200
+                            dark:hover:border-emerald-800
+                            dark:hover:bg-emerald-950/30
+                          "
+                        >
+                          <FaWallet className="text-emerald-500" />
+                          {budget > 0 ? "Manage Budget" : "Set Your Budget"}
                         </button>
 
                         <button
                           type="button"
                           onClick={() => setIsChatOpen(true)}
                           className="
-                          flex w-fit
-                          items-center justify-center gap-2
-                          rounded-xl
-                          border border-gray-200
-                          bg-white
-                          px-5 py-3
-                          text-sm font-semibold
-                          text-gray-700
-                          transition
-                          hover:border-emerald-200
-                          hover:bg-emerald-50
-                          dark:border-gray-700
-                          dark:bg-gray-900
-                          dark:text-gray-200
-                          dark:hover:border-emerald-800
-                          dark:hover:bg-emerald-950/30
-                        "
+                            flex w-fit
+                            items-center justify-center gap-2
+                            rounded-xl
+                            border border-gray-200
+                            bg-white
+                            px-5 py-3
+                            text-sm font-semibold
+                            text-gray-700
+                            transition
+                            hover:border-emerald-200
+                            hover:bg-emerald-50
+                            dark:border-gray-700
+                            dark:bg-gray-900
+                            dark:text-gray-200
+                            dark:hover:border-emerald-800
+                            dark:hover:bg-emerald-950/30
+                          "
                         >
                           <FaRobot className="text-emerald-500" />
                           Ask AI Assistant
@@ -873,11 +985,11 @@ function Dashboard() {
 
                   <div
                     className="
-                    grid
-                    border-t border-gray-100
-                    sm:grid-cols-3
-                    dark:border-gray-800
-                  "
+                      grid
+                      border-t border-gray-100
+                      sm:grid-cols-3
+                      dark:border-gray-800
+                    "
                   >
                     <div className="p-5 sm:p-6">
                       <FaRobot className="text-lg text-emerald-500" />
@@ -894,11 +1006,11 @@ function Dashboard() {
 
                     <div
                       className="
-                      border-t border-gray-100
-                      p-5
-                      sm:border-l sm:border-t-0 sm:p-6
-                      dark:border-gray-800
-                    "
+                        border-t border-gray-100
+                        p-5
+                        sm:border-l sm:border-t-0 sm:p-6
+                        dark:border-gray-800
+                      "
                     >
                       <FaChartBar className="text-lg text-emerald-500" />
 
@@ -914,11 +1026,11 @@ function Dashboard() {
 
                     <div
                       className="
-                      border-t border-gray-100
-                      p-5
-                      sm:border-l sm:border-t-0 sm:p-6
-                      dark:border-gray-800
-                    "
+                        border-t border-gray-100
+                        p-5
+                        sm:border-l sm:border-t-0 sm:p-6
+                        dark:border-gray-800
+                      "
                     >
                       <FaWallet className="text-lg text-emerald-500" />
 
@@ -935,137 +1047,39 @@ function Dashboard() {
                 </div>
               </section>
 
-              {/* =================================================
-                FIRST RECEIPT FORM
-            ================================================= */}
-
-              <section id="expense-form" className="mt-6 scroll-mt-28">
-                <div
-                  className="
-                  rounded-2xl
-                  border border-gray-200
-                  bg-white
-                  p-6
-                  shadow-sm
-                  dark:border-gray-800
-                  dark:bg-[#101917]
-                "
-                >
-                  <div className="mb-6">
-                    <p
-                      className="
-                      text-xs font-semibold
-                      uppercase tracking-[0.16em]
-                      text-emerald-600
-                      dark:text-emerald-400
-                    "
-                    >
-                      Get started
-                    </p>
-
-                    <h2 className="mt-1 text-xl font-bold text-gray-900 dark:text-white">
-                      Add Your First Receipt
-                    </h2>
-
-                    <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                      Enter your purchase details and let AI categorize the
-                      expense for you.
-                    </p>
-                  </div>
-
-                  {error && (
-                    <div
-                      className="
-                      mb-5 rounded-xl
-                      border border-red-200
-                      bg-red-50
-                      p-4
-                      text-sm text-red-700
-                      dark:border-red-900/50
-                      dark:bg-red-950/30
-                      dark:text-red-300
-                    "
-                    >
-                      {error}
-                    </div>
-                  )}
-
-                  {isCategorizing && (
-                    <div
-                      className="
-                      mb-5 flex items-center gap-3
-                      rounded-xl
-                      border border-emerald-200
-                      bg-emerald-50
-                      p-4
-                      dark:border-emerald-900/60
-                      dark:bg-emerald-950/30
-                    "
-                    >
-                      <div
-                        className="
-                        h-5 w-5
-                        animate-spin
-                        rounded-full
-                        border-2
-                        border-emerald-600
-                        border-t-transparent
-                      "
-                      />
-
-                      <div>
-                        <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-300">
-                          AI is reading your receipt...
-                        </p>
-
-                        <p className="mt-1 text-xs text-emerald-600 dark:text-emerald-500">
-                          Identifying the most suitable expense category.
-                        </p>
-                      </div>
-                    </div>
-                  )}
-
-                  <ExpenseForm
-                    onAddExpense={handleAddExpense}
-                    onUpdateExpense={handleUpdateExpense}
-                    editingExpense={editingExpense}
-                    isCategorizing={isCategorizing}
-                    onCancelEdit={() => setEditingExpense(null)}
-                  />
-                </div>
-              </section>
+              {/* NO INLINE EXPENSE FORM HERE */}
             </>
           ) : (
             <>
               {/* =================================================
-                SUMMARY CARDS
-            ================================================= */}
+                  SUMMARY CARDS
+              ================================================= */}
 
               <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                 {/* TOTAL SPENDING */}
 
                 <div
                   className="
-                  rounded-2xl
-                  border border-gray-200
-                  bg-white
-                  p-5
-                  shadow-sm
-                  dark:border-gray-800
-                  dark:bg-[#101917]
-                "
+                    rounded-2xl
+                    border border-gray-200
+                    bg-white
+                    p-5
+                    shadow-sm
+                    dark:border-gray-800
+                    dark:bg-[#101917]
+                  "
                 >
                   <div className="flex items-start justify-between">
                     <div
                       className="
-                      flex h-12 w-12
-                      items-center justify-center
-                      rounded-full
-                      bg-emerald-50
-                      text-xl text-emerald-600
-                      dark:bg-emerald-950/40
-                      dark:text-emerald-400
-                    "
+                        flex h-12 w-12
+                        items-center justify-center
+                        rounded-full
+                        bg-emerald-50
+                        text-xl text-emerald-600
+                        dark:bg-emerald-950/40
+                        dark:text-emerald-400
+                      "
                     >
                       <FaWallet />
                     </div>
@@ -1075,23 +1089,11 @@ function Dashboard() {
                     </span>
                   </div>
 
-                  <p
-                    className="
-                    mt-5 text-sm font-medium
-                    text-gray-500
-                    dark:text-gray-400
-                  "
-                  >
+                  <p className="mt-5 text-sm font-medium text-gray-500 dark:text-gray-400">
                     Total Spending
                   </p>
 
-                  <p
-                    className="
-                    mt-1 text-2xl font-bold
-                    text-gray-950
-                    dark:text-white
-                  "
-                  >
+                  <p className="mt-1 text-2xl font-bold text-gray-950 dark:text-white">
                     $
                     {total.toLocaleString("en-US", {
                       minimumFractionDigits: 2,
@@ -1107,34 +1109,41 @@ function Dashboard() {
 
                 {/* BUDGET */}
 
-                <div
+                <button
+                  type="button"
+                  onClick={openBudgetModal}
                   className="
-                  rounded-2xl
-                  border border-gray-200
-                  bg-white
-                  p-5
-                  shadow-sm
-                  dark:border-gray-800
-                  dark:bg-[#101917]
-                "
+                    rounded-2xl
+                    border border-gray-200
+                    bg-white
+                    p-5
+                    text-left
+                    shadow-sm
+                    transition
+                    hover:border-emerald-200
+                    hover:shadow-md
+                    dark:border-gray-800
+                    dark:bg-[#101917]
+                    dark:hover:border-emerald-900
+                  "
                 >
                   <div className="flex items-start justify-between">
                     <div
                       className="
-                      flex h-12 w-12
-                      items-center justify-center
-                      rounded-full
-                      bg-emerald-50
-                      text-xl text-emerald-600
-                      dark:bg-emerald-950/40
-                      dark:text-emerald-400
-                    "
+                        flex h-12 w-12
+                        items-center justify-center
+                        rounded-full
+                        bg-emerald-50
+                        text-xl text-emerald-600
+                        dark:bg-emerald-950/40
+                        dark:text-emerald-400
+                      "
                     >
                       <FaChartBar />
                     </div>
 
                     <span className="text-sm font-bold text-gray-900 dark:text-white">
-                      {Math.round(budgetProgress)}%
+                      {budget > 0 ? `${Math.round(budgetProgress)}%` : "Set"}
                     </span>
                   </div>
 
@@ -1154,38 +1163,38 @@ function Dashboard() {
                   <div className="mt-3 h-2 overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800">
                     <div
                       className="
-                      h-full rounded-full bg-emerald-500
-                      transition-all duration-500
-                    "
+                        h-full rounded-full bg-emerald-500
+                        transition-all duration-500
+                      "
                       style={{
                         width: `${budgetProgress}%`,
                       }}
                     />
                   </div>
-                </div>
+                </button>
 
                 {/* RECEIPTS */}
 
                 <div
                   className="
-                  rounded-2xl
-                  border border-gray-200
-                  bg-white
-                  p-5
-                  shadow-sm
-                  dark:border-gray-800
-                  dark:bg-[#101917]
-                "
+                    rounded-2xl
+                    border border-gray-200
+                    bg-white
+                    p-5
+                    shadow-sm
+                    dark:border-gray-800
+                    dark:bg-[#101917]
+                  "
                 >
                   <div
                     className="
-                    flex h-12 w-12
-                    items-center justify-center
-                    rounded-full
-                    bg-blue-50
-                    text-xl text-blue-500
-                    dark:bg-blue-950/30
-                  "
+                      flex h-12 w-12
+                      items-center justify-center
+                      rounded-full
+                      bg-blue-50
+                      text-xl text-blue-500
+                      dark:bg-blue-950/30
+                    "
                   >
                     <FaReceipt />
                   </div>
@@ -1208,24 +1217,24 @@ function Dashboard() {
 
                 <div
                   className="
-                  rounded-2xl
-                  border border-gray-200
-                  bg-white
-                  p-5
-                  shadow-sm
-                  dark:border-gray-800
-                  dark:bg-[#101917]
-                "
+                    rounded-2xl
+                    border border-gray-200
+                    bg-white
+                    p-5
+                    shadow-sm
+                    dark:border-gray-800
+                    dark:bg-[#101917]
+                  "
                 >
                   <div
                     className="
-                    flex h-12 w-12
-                    items-center justify-center
-                    rounded-full
-                    bg-purple-50
-                    text-xl text-purple-500
-                    dark:bg-purple-950/30
-                  "
+                      flex h-12 w-12
+                      items-center justify-center
+                      rounded-full
+                      bg-purple-50
+                      text-xl text-purple-500
+                      dark:bg-purple-950/30
+                    "
                   >
                     $
                   </div>
@@ -1250,23 +1259,23 @@ function Dashboard() {
               </div>
 
               {/* =================================================
-                SPENDING + AI INSIGHT
-            ================================================= */}
+                  SPENDING + AI INSIGHT
+              ================================================= */}
 
-              <section id="analytics" className="mt-6 scroll-mt-28">
+              <section id="analytics" className="mt-6 scroll-mt-24">
                 <div className="grid gap-5 xl:grid-cols-[1.35fr_1fr]">
                   {/* SPENDING OVERVIEW */}
 
                   <div
                     className="
-                    overflow-hidden
-                    rounded-2xl
-                    border border-gray-200
-                    bg-white
-                    shadow-sm
-                    dark:border-gray-800
-                    dark:bg-[#101917]
-                  "
+                      overflow-hidden
+                      rounded-2xl
+                      border border-gray-200
+                      bg-white
+                      shadow-sm
+                      dark:border-gray-800
+                      dark:bg-[#101917]
+                    "
                   >
                     <div className="flex items-center justify-between p-5 pb-2">
                       <div>
@@ -1282,15 +1291,15 @@ function Dashboard() {
                       <button
                         type="button"
                         className="
-                        flex items-center gap-2
-                        rounded-lg
-                        border border-gray-200
-                        px-3 py-2
-                        text-xs font-semibold
-                        text-gray-600
-                        dark:border-gray-700
-                        dark:text-gray-300
-                      "
+                          flex items-center gap-2
+                          rounded-lg
+                          border border-gray-200
+                          px-3 py-2
+                          text-xs font-semibold
+                          text-gray-600
+                          dark:border-gray-700
+                          dark:text-gray-300
+                        "
                       >
                         This Month
                         <FaChevronDown className="text-[9px]" />
@@ -1307,30 +1316,30 @@ function Dashboard() {
                   <div
                     id="insights"
                     className="
-                    scroll-mt-28
-                    overflow-hidden
-                    rounded-2xl
-                    border border-emerald-100
-                    bg-gradient-to-br
-                    from-emerald-50
-                    to-white
-                    shadow-sm
-                    dark:border-emerald-950
-                    dark:from-[#0c2922]
-                    dark:to-[#101917]
-                  "
+                      scroll-mt-24
+                      overflow-hidden
+                      rounded-2xl
+                      border border-emerald-100
+                      bg-gradient-to-br
+                      from-emerald-50
+                      to-white
+                      shadow-sm
+                      dark:border-emerald-950
+                      dark:from-[#0c2922]
+                      dark:to-[#101917]
+                    "
                   >
                     <div className="flex items-center justify-between p-5">
                       <div className="flex items-center gap-3">
                         <div
                           className="
-                          flex h-10 w-10
-                          items-center justify-center
-                          rounded-xl
-                          bg-emerald-500/10
-                          text-emerald-600
-                          dark:text-emerald-400
-                        "
+                            flex h-10 w-10
+                            items-center justify-center
+                            rounded-xl
+                            bg-emerald-500/10
+                            text-emerald-600
+                            dark:text-emerald-400
+                          "
                         >
                           <FaLightbulb />
                         </div>
@@ -1351,13 +1360,13 @@ function Dashboard() {
                         onClick={handleAnalyzeExpenses}
                         disabled={isAnalyzing || !expenses.length}
                         className="
-                        text-xs font-semibold
-                        text-emerald-600
-                        hover:text-emerald-700
-                        disabled:cursor-not-allowed
-                        disabled:opacity-50
-                        dark:text-emerald-400
-                      "
+                          text-xs font-semibold
+                          text-emerald-600
+                          hover:text-emerald-700
+                          disabled:cursor-not-allowed
+                          disabled:opacity-50
+                          dark:text-emerald-400
+                        "
                       >
                         {isAnalyzing ? "Analyzing..." : "Analyze"}
                       </button>
@@ -1370,15 +1379,18 @@ function Dashboard() {
                           onAnalyze={handleAnalyzeExpenses}
                           isLoading={isAnalyzing}
                           hasExpenses={expenses.length > 0}
+                          expenses={expenses}
+                          budget={budget}
+                          total={total}
                         />
                       ) : (
                         <div
                           className="
-                          rounded-2xl
-                          bg-white/70
-                          p-5
-                          dark:bg-gray-900/40
-                        "
+                            rounded-2xl
+                            bg-white/70
+                            p-5
+                            dark:bg-gray-900/40
+                          "
                         >
                           <p className="text-sm font-semibold text-gray-900 dark:text-white">
                             Your financial assistant is ready.
@@ -1394,17 +1406,17 @@ function Dashboard() {
                             onClick={handleAnalyzeExpenses}
                             disabled={!expenses.length || isAnalyzing}
                             className="
-                            mt-4
-                            rounded-xl
-                            bg-emerald-500
-                            px-4 py-2.5
-                            text-sm font-bold
-                            text-[#031815]
-                            transition
-                            hover:bg-emerald-400
-                            disabled:cursor-not-allowed
-                            disabled:opacity-50
-                          "
+                              mt-4
+                              rounded-xl
+                              bg-emerald-500
+                              px-4 py-2.5
+                              text-sm font-bold
+                              text-[#031815]
+                              transition
+                              hover:bg-emerald-400
+                              disabled:cursor-not-allowed
+                              disabled:opacity-50
+                            "
                           >
                             {isAnalyzing
                               ? "Analyzing..."
@@ -1421,28 +1433,28 @@ function Dashboard() {
                 <div className="mt-5 grid gap-5 xl:grid-cols-2">
                   <div
                     className="
-                    rounded-2xl
-                    border border-gray-200
-                    bg-white
-                    p-5
-                    shadow-sm
-                    dark:border-gray-800
-                    dark:bg-[#101917]
-                  "
+                      rounded-2xl
+                      border border-gray-200
+                      bg-white
+                      p-5
+                      shadow-sm
+                      dark:border-gray-800
+                      dark:bg-[#101917]
+                    "
                   >
                     <CategorySummary expenses={expenses} />
                   </div>
 
                   <div
                     className="
-                    rounded-2xl
-                    border border-gray-200
-                    bg-white
-                    p-5
-                    shadow-sm
-                    dark:border-gray-800
-                    dark:bg-[#101917]
-                  "
+                      rounded-2xl
+                      border border-gray-200
+                      bg-white
+                      p-5
+                      shadow-sm
+                      dark:border-gray-800
+                      dark:bg-[#101917]
+                    "
                   >
                     <AnalyticsCards expenses={expenses} />
                   </div>
@@ -1450,30 +1462,30 @@ function Dashboard() {
               </section>
 
               {/* =================================================
-                RECENT EXPENSES
-            ================================================= */}
+                  RECENT EXPENSES
+              ================================================= */}
 
-              <section id="expenses" className="mt-6 scroll-mt-28">
+              <section id="expenses" className="mt-6 scroll-mt-24">
                 <div
                   className="
-                  rounded-2xl
-                  border border-gray-200
-                  bg-white
-                  shadow-sm
-                  dark:border-gray-800
-                  dark:bg-[#101917]
-                "
+                    rounded-2xl
+                    border border-gray-200
+                    bg-white
+                    shadow-sm
+                    dark:border-gray-800
+                    dark:bg-[#101917]
+                  "
                 >
                   <div
                     className="
-                    flex flex-col gap-4
-                    border-b border-gray-100
-                    p-5
-                    sm:flex-row
-                    sm:items-center
-                    sm:justify-between
-                    dark:border-gray-800
-                  "
+                      flex flex-col gap-4
+                      border-b border-gray-100
+                      p-5
+                      sm:flex-row
+                      sm:items-center
+                      sm:justify-between
+                      dark:border-gray-800
+                    "
                   >
                     <div>
                       <h2 className="text-lg font-bold text-gray-900 dark:text-white">
@@ -1487,25 +1499,18 @@ function Dashboard() {
 
                     <button
                       type="button"
-                      onClick={() =>
-                        document
-                          .getElementById("expense-form")
-                          ?.scrollIntoView({
-                            behavior: "smooth",
-                            block: "start",
-                          })
-                      }
+                      onClick={openExpenseModal}
                       className="
-                      flex w-fit
-                      items-center gap-2
-                      rounded-xl
-                      bg-emerald-500
-                      px-4 py-2.5
-                      text-xs font-bold
-                      text-[#031815]
-                      transition
-                      hover:bg-emerald-400
-                    "
+                        flex w-fit
+                        items-center gap-2
+                        rounded-xl
+                        bg-emerald-500
+                        px-4 py-2.5
+                        text-xs font-bold
+                        text-[#031815]
+                        transition
+                        hover:bg-emerald-400
+                      "
                     >
                       <FaPlus />
                       Add Expense
@@ -1534,20 +1539,20 @@ function Dashboard() {
               </section>
 
               {/* =================================================
-                EXPORT
-            ================================================= */}
+                  EXPORT
+              ================================================= */}
 
-              <section id="export" className="mt-6 scroll-mt-28">
+              <section id="export" className="mt-6 scroll-mt-24">
                 <div
                   className="
-                  rounded-2xl
-                  border border-gray-200
-                  bg-white
-                  p-6
-                  shadow-sm
-                  dark:border-gray-800
-                  dark:bg-[#101917]
-                "
+                    rounded-2xl
+                    border border-gray-200
+                    bg-white
+                    p-6
+                    shadow-sm
+                    dark:border-gray-800
+                    dark:bg-[#101917]
+                  "
                 >
                   <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-600 dark:text-emerald-400">
                     Your data
@@ -1574,290 +1579,321 @@ function Dashboard() {
             </>
           )}
         </div>
+
+        {/* =====================================================
+            FOOTER
+            IMPORTANT:
+            Footer is inside the desktop content area so it
+            cannot be hidden underneath DashboardNav.
+        ===================================================== */}
+
+        <Footer />
       </div>
 
       {/* =====================================================
-    ADD / EDIT RECEIPT MODAL
-===================================================== */}
+          ADD / EDIT RECEIPT MODAL
+      ===================================================== */}
 
       {isExpenseModalOpen && (
         <div
           className="
-      fixed inset-0 z-[120]
-      flex items-center justify-center
-      bg-black/50
-      p-4
-      backdrop-blur-sm
-    "
+            fixed inset-0 z-[120]
+            flex items-center justify-center
+            bg-black/50
+            p-4
+            backdrop-blur-sm
+          "
           onMouseDown={(e) => {
             if (e.target === e.currentTarget) {
-              setIsExpenseModalOpen(false);
+              closeExpenseModal();
             }
           }}
         >
           <div
             className="
-        w-full max-w-2xl
-        max-h-[90vh]
-        overflow-y-auto
-        rounded-3xl
-        border border-gray-200
-        bg-white
-        p-6
-        shadow-2xl
-        dark:border-gray-800
-        dark:bg-[#101917]
-      "
-          >
-            {/* MODAL HEADER */}
-
-            <div className="mb-6 flex items-start justify-between">
-              <div>
-                <p
-                  className="
-            text-xs font-semibold
-            uppercase tracking-[0.16em]
-            text-emerald-600
-            dark:text-emerald-400
-          "
-                >
-                  Receipt management
-                </p>
-
-                <h2
-                  className="
-            mt-1
-            text-xl font-bold
-            text-gray-900
-            dark:text-white
-          "
-                >
-                  {editingExpense ? "Edit Expense" : "Add New Receipt"}
-                </h2>
-
-                <p
-                  className="
-            mt-1
-            text-sm
-            text-gray-500
-            dark:text-gray-400
-          "
-                >
-                  Let AI categorize your purchase automatically.
-                </p>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setIsExpenseModalOpen(false);
-                  setEditingExpense(null);
-                }}
-                className="
-            flex h-9 w-9
-            items-center justify-center
-            rounded-xl
-            text-gray-400
-            transition
-            hover:bg-gray-100
-            hover:text-gray-700
-            dark:hover:bg-gray-800
-            dark:hover:text-white
-          "
-                aria-label="Close receipt form"
-              >
-                <FaTimes />
-              </button>
-            </div>
-
-            {/* ERROR */}
-
-            {error && (
-              <div
-                className="
-            mb-5
-            rounded-xl
-            border border-red-200
-            bg-red-50
-            p-4
-            text-sm text-red-700
-            dark:border-red-900/50
-            dark:bg-red-950/30
-            dark:text-red-300
-          "
-              >
-                {error}
-              </div>
-            )}
-
-            {/* AI CATEGORIZATION */}
-
-            {isCategorizing && (
-              <div
-                className="
-            mb-5
-            flex items-center gap-3
-            rounded-xl
-            border border-emerald-200
-            bg-emerald-50
-            p-4
-            dark:border-emerald-900/60
-            dark:bg-emerald-950/30
-          "
-              >
-                <div
-                  className="
-              h-5 w-5
-              animate-spin
-              rounded-full
-              border-2
-              border-emerald-600
-              border-t-transparent
+              relative
+              w-full max-w-2xl
+              max-h-[calc(100vh-2rem)]
+              overflow-hidden
+              rounded-3xl
+              border border-gray-200
+              bg-white
+              shadow-2xl
+              dark:border-gray-800
+              dark:bg-[#101917]
             "
-                />
+          >
+            <div
+              className="
+                max-h-[calc(100vh-2rem)]
+                overflow-y-auto
+                p-6
+                [scrollbar-width:none]
+                [-ms-overflow-style:none]
+                [&::-webkit-scrollbar]:hidden
+              "
+            >
+              {/* MODAL HEADER */}
 
+              <div className="mb-6 flex items-start justify-between">
                 <div>
                   <p
                     className="
-              text-sm font-semibold
-              text-emerald-700
-              dark:text-emerald-300
-            "
+                      text-xs font-semibold
+                      uppercase tracking-[0.16em]
+                      text-emerald-600
+                      dark:text-emerald-400
+                    "
                   >
-                    AI is reading your receipt...
+                    Receipt management
                   </p>
+
+                  <h2
+                    className="
+                      mt-1
+                      text-xl font-bold
+                      text-gray-900
+                      dark:text-white
+                    "
+                  >
+                    {editingExpense ? "Edit Expense" : "Add New Receipt"}
+                  </h2>
 
                   <p
                     className="
-              mt-1 text-xs
-              text-emerald-600
-              dark:text-emerald-500
-            "
+                      mt-1
+                      text-sm
+                      text-gray-500
+                      dark:text-gray-400
+                    "
                   >
-                    Identifying the most suitable expense category.
+                    Let AI categorize your purchase automatically.
                   </p>
                 </div>
+
+                <button
+                  type="button"
+                  onClick={closeExpenseModal}
+                  className="
+                    flex h-9 w-9
+                    items-center justify-center
+                    rounded-xl
+                    text-gray-400
+                    transition
+                    hover:bg-gray-100
+                    hover:text-gray-700
+                    dark:hover:bg-gray-800
+                    dark:hover:text-white
+                  "
+                  aria-label="Close receipt form"
+                >
+                  <FaTimes />
+                </button>
               </div>
-            )}
 
-            {/* FORM */}
+              {/* ERROR */}
 
-            <ExpenseForm
-              onAddExpense={handleAddExpense}
-              onUpdateExpense={handleUpdateExpense}
-              editingExpense={editingExpense}
-              isCategorizing={isCategorizing}
-              onCancelEdit={() => {
-                setEditingExpense(null);
-                setIsExpenseModalOpen(false);
-              }}
-            />
+              {error && (
+                <div
+                  className="
+                    mb-5
+                    rounded-xl
+                    border border-red-200
+                    bg-red-50
+                    p-4
+                    text-sm text-red-700
+                    dark:border-red-900/50
+                    dark:bg-red-950/30
+                    dark:text-red-300
+                  "
+                >
+                  {error}
+                </div>
+              )}
+
+              {/* AI CATEGORIZATION */}
+
+              {isCategorizing && (
+                <div
+                  className="
+                    mb-5
+                    flex items-center gap-3
+                    rounded-xl
+                    border border-emerald-200
+                    bg-emerald-50
+                    p-4
+                    dark:border-emerald-900/60
+                    dark:bg-emerald-950/30
+                  "
+                >
+                  <div
+                    className="
+                      h-5 w-5
+                      animate-spin
+                      rounded-full
+                      border-2
+                      border-emerald-600
+                      border-t-transparent
+                    "
+                  />
+
+                  <div>
+                    <p
+                      className="
+                        text-sm font-semibold
+                        text-emerald-700
+                        dark:text-emerald-300
+                      "
+                    >
+                      AI is reading your receipt...
+                    </p>
+
+                    <p
+                      className="
+                        mt-1 text-xs
+                        text-emerald-600
+                        dark:text-emerald-500
+                      "
+                    >
+                      Identifying the most suitable expense category.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* FORM */}
+
+              <ExpenseForm
+                onAddExpense={handleAddExpense}
+                onUpdateExpense={handleUpdateExpense}
+                editingExpense={editingExpense}
+                isCategorizing={isCategorizing}
+                onCancelEdit={closeExpenseModal}
+              />
+            </div>
           </div>
         </div>
       )}
 
       {/* =====================================================
-    BUDGET MODAL
-===================================================== */}
+          BUDGET MODAL
+      ===================================================== */}
 
       {isBudgetModalOpen && (
         <div
           className="
-      fixed inset-0 z-[120]
-      flex items-center justify-center
-      bg-black/50
-      p-4
-      backdrop-blur-sm
-    "
+            fixed inset-0 z-[120]
+            flex items-center justify-center
+            bg-black/50
+            p-4
+            backdrop-blur-sm
+          "
           onMouseDown={(e) => {
             if (e.target === e.currentTarget) {
-              setIsBudgetModalOpen(false);
+              closeBudgetModal();
             }
           }}
         >
           <div
             className="
-        w-full max-w-lg
-        rounded-3xl
-        border border-gray-200
-        bg-white
-        p-6
-        shadow-2xl
-        dark:border-gray-800
-        dark:bg-[#101917]
-      "
+              relative
+              w-full max-w-xl
+              max-h-[calc(100vh-2rem)]
+              overflow-hidden
+              rounded-3xl
+              border border-gray-200
+              bg-white
+              shadow-2xl
+              dark:border-gray-800
+              dark:bg-[#101917]
+            "
           >
-            <div className="mb-6 flex items-start justify-between">
-              <div>
-                <p
-                  className="
-            text-xs font-semibold
-            uppercase tracking-[0.16em]
-            text-emerald-600
-            dark:text-emerald-400
-          "
-                >
-                  Financial planning
-                </p>
+            <div
+              className="
+                max-h-[calc(100vh-2rem)]
+                overflow-y-auto
+                p-6
+                [scrollbar-width:none]
+                [-ms-overflow-style:none]
+                [&::-webkit-scrollbar]:hidden
+              "
+            >
+              {/* MODAL HEADER */}
 
-                <h2
-                  className="
-            mt-1
-            text-xl font-bold
-            text-gray-900
-            dark:text-white
-          "
-                >
-                  Manage Your Budget
-                </h2>
+              <div className="mb-6 flex items-start justify-between">
+                <div>
+                  <p
+                    className="
+                      text-xs font-semibold
+                      uppercase tracking-[0.16em]
+                      text-emerald-600
+                      dark:text-emerald-400
+                    "
+                  >
+                    Financial planning
+                  </p>
 
-                <p
+                  <h2
+                    className="
+                      mt-1
+                      text-xl font-bold
+                      text-gray-900
+                      dark:text-white
+                    "
+                  >
+                    Manage Your Budget
+                  </h2>
+
+                  <p
+                    className="
+                      mt-1
+                      text-sm
+                      text-gray-500
+                      dark:text-gray-400
+                    "
+                  >
+                    Set a spending limit and keep track of your progress.
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={closeBudgetModal}
                   className="
-            mt-1
-            text-sm
-            text-gray-500
-            dark:text-gray-400
-          "
+                    flex h-9 w-9
+                    items-center justify-center
+                    rounded-xl
+                    text-gray-400
+                    transition
+                    hover:bg-gray-100
+                    hover:text-gray-700
+                    dark:hover:bg-gray-800
+                    dark:hover:text-white
+                  "
+                  aria-label="Close budget"
                 >
-                  Set a spending limit and keep track of your progress.
-                </p>
+                  <FaTimes />
+                </button>
               </div>
 
-              <button
-                type="button"
-                onClick={() => setIsBudgetModalOpen(false)}
-                className="
-            flex h-9 w-9
-            items-center justify-center
-            rounded-xl
-            text-gray-400
-            transition
-            hover:bg-gray-100
-            hover:text-gray-700
-            dark:hover:bg-gray-800
-            dark:hover:text-white
-          "
-                aria-label="Close budget"
-              >
-                <FaTimes />
-              </button>
-            </div>
+              {/* BUDGET CARD */}
 
-            <BudgetCard
-              totalSpent={total}
-              budget={budget}
-              onSaveBudget={(value) => {
-                handleSaveBudget(value);
-                setIsBudgetModalOpen(false);
-              }}
-            />
+              <BudgetCard
+                totalSpent={total}
+                budget={budget}
+                onSaveBudget={(value) => {
+                  handleSaveBudget(value);
+                  closeBudgetModal();
+                }}
+              />
+            </div>
           </div>
         </div>
       )}
 
       {/* =====================================================
-        AI CHAT
-    ===================================================== */}
+          AI CHAT
+      ===================================================== */}
 
       <AIChat
         expenses={expenses}

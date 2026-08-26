@@ -121,54 +121,187 @@ Return ONLY the category name.
 
 export async function analyzeExpenses(expenses) {
   if (!expenses.length) {
-    return "No expenses available to analyze.";
+    return {
+      summary: "No expenses available to analyze.",
+      topCategory: "No data",
+      observation:
+        "There is not enough spending data to identify a spending pattern.",
+      recommendations: [],
+      savingTip:
+        "Add some expenses to receive personalized saving recommendations.",
+    };
   }
 
   try {
     const formattedExpenses = expenses
       .map(
         (expense) =>
-          `${expense.itemName} - $${expense.price} (${expense.aiCategory})`,
+          `${expense.itemName} - $${Number(expense.price || 0).toFixed(2)} (${
+            expense.aiCategory || "Miscellaneous"
+          })`,
       )
       .join("\n");
 
-    return await requestAI(
+    const response = await requestAI(
       [
         {
           role: "system",
-          content:
-            "You are a business finance assistant. Give concise spending insights.",
+          content: `
+You are SmartReceipts AI, a business expense analysis assistant.
+
+Your job is to analyze the user's recorded expenses and create a simple,
+easy-to-understand financial report.
+
+IMPORTANT RULES:
+
+1. Use ONLY the expense information provided.
+2. Never invent expenses, prices, categories, or financial information.
+3. Identify the category with the highest total spending.
+4. Explain the user's main spending behavior.
+5. Provide exactly 3 practical recommendations.
+6. Provide one practical saving tip.
+7. Use simple language that a normal user can easily understand.
+8. Keep the summary concise.
+9. Do not use complicated financial terminology.
+10. Return ONLY valid JSON.
+11. Do NOT use Markdown.
+12. Do NOT use \`\`\`json.
+13. Do NOT write anything before or after the JSON.
+
+Return EXACTLY this structure:
+
+{
+  "summary": "A simple 2-3 sentence overview of the user's spending.",
+  "topCategory": "The category with the highest total spending.",
+  "observation": "A simple explanation of the user's main spending pattern.",
+  "recommendations": [
+    "First practical recommendation.",
+    "Second practical recommendation.",
+    "Third practical recommendation."
+  ],
+  "savingTip": "One short practical saving tip."
+}
+`,
         },
+
         {
           role: "user",
           content: `
-Analyze these expenses.
+Analyze these recorded expenses:
 
 ${formattedExpenses}
 
-Provide:
-
-• Highest spending category
-
-• Spending habits
-
-• Three recommendations
-
-Limit to 150 words.
+Create the financial report using the required JSON structure.
 `,
         },
       ],
-      0.3,
-      200,
+      0.2,
+      300,
     );
+
+    // ==================================================
+    // CLEAN RESPONSE
+    // ==================================================
+
+    let cleanedResponse = response.trim();
+
+    // Remove Markdown code fences if the AI adds them
+    cleanedResponse = cleanedResponse
+      .replace(/^```json\s*/i, "")
+      .replace(/^```\s*/i, "")
+      .replace(/\s*```$/i, "")
+      .trim();
+
+    // ==================================================
+    // PARSE JSON
+    // ==================================================
+
+    let parsed;
+
+    try {
+      parsed = JSON.parse(cleanedResponse);
+    } catch (parseError) {
+      console.warn("AI returned invalid JSON. Trying to recover...");
+
+      const start = cleanedResponse.indexOf("{");
+      const end = cleanedResponse.lastIndexOf("}");
+
+      if (start !== -1 && end !== -1 && end > start) {
+        const possibleJson = cleanedResponse.slice(start, end + 1);
+
+        try {
+          parsed = JSON.parse(possibleJson);
+        } catch (recoveryError) {
+          console.error("JSON recovery failed.");
+          console.error(recoveryError);
+
+          throw new Error("AI returned an invalid analysis format.");
+        }
+      } else {
+        throw new Error("AI returned an invalid analysis format.");
+      }
+    }
+
+    // ==================================================
+    // VALIDATE RECOMMENDATIONS
+    // ==================================================
+
+    const recommendations = Array.isArray(parsed.recommendations)
+      ? parsed.recommendations
+          .filter((item) => typeof item === "string" && item.trim().length > 0)
+          .slice(0, 3)
+      : [];
+
+    // ==================================================
+    // RETURN STRUCTURED REPORT
+    // ==================================================
+
+    return {
+      summary:
+        typeof parsed.summary === "string" && parsed.summary.trim()
+          ? parsed.summary.trim()
+          : "Your spending has been analyzed.",
+
+      topCategory:
+        typeof parsed.topCategory === "string" && parsed.topCategory.trim()
+          ? parsed.topCategory.trim()
+          : "Not available",
+
+      observation:
+        typeof parsed.observation === "string" && parsed.observation.trim()
+          ? parsed.observation.trim()
+          : "No specific spending pattern was identified.",
+
+      recommendations,
+
+      savingTip:
+        typeof parsed.savingTip === "string" && parsed.savingTip.trim()
+          ? parsed.savingTip.trim()
+          : "Review your largest spending categories to find opportunities to save.",
+    };
   } catch (error) {
     console.error("Analysis failed");
     console.error(error);
 
-    return "Unable to analyze expenses at the moment.";
+    // Safe fallback so the dashboard does not break
+    return {
+      summary: "SmartReceipts could not generate the AI report right now.",
+
+      topCategory: "Not available",
+
+      observation: "The AI analysis could not be completed at this time.",
+
+      recommendations: [
+        "Review your largest recorded expenses.",
+        "Check which category uses the most of your spending.",
+        "Consider setting a monthly spending limit.",
+      ],
+
+      savingTip:
+        "Review your recent expenses and look for one unnecessary cost you can reduce.",
+    };
   }
 }
-
 // -------------------------
 // AI Chat Companion
 // -------------------------

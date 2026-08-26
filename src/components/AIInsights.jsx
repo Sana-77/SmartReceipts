@@ -1,296 +1,227 @@
 import {
-  FaBrain,
   FaChartPie,
   FaCheckCircle,
   FaLightbulb,
   FaRobot,
   FaStar,
-  FaArrowRight,
+  FaWallet,
+  FaArrowUp,
+  FaArrowDown,
 } from "react-icons/fa";
 
-function AIInsights({ insights, onAnalyze, isLoading, hasExpenses }) {
+function AIInsights({
+  insights,
+  onAnalyze,
+  isLoading,
+  hasExpenses,
+  expenses = [],
+  budget = 0,
+  total = 0,
+}) {
+  const numericTotal = Number(total) || 0;
+  const numericBudget = Number(budget) || 0;
+
+  const remaining = numericBudget - numericTotal;
+
+  const budgetPercentage =
+    numericBudget > 0 ? Math.min((numericTotal / numericBudget) * 100, 100) : 0;
+
+  const isOverBudget = numericBudget > 0 && numericTotal > numericBudget;
+
+  const isNearBudget =
+    numericBudget > 0 &&
+    numericTotal >= numericBudget * 0.8 &&
+    numericTotal <= numericBudget;
+
+  // =====================================================
+  // FIND HIGHEST EXPENSE
+  // =====================================================
+
+  const highestExpense =
+    expenses.length > 0
+      ? [...expenses].sort(
+          (a, b) => Number(b.price || 0) - Number(a.price || 0),
+        )[0]
+      : null;
+
+  // =====================================================
+  // FORMAT CURRENCY
+  // =====================================================
+
+  const formatCurrency = (amount) =>
+    Number(amount || 0).toLocaleString("en-US", {
+      style: "currency",
+      currency: "USD",
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+
   return (
-    <section
-      className="
-        relative overflow-hidden
-        rounded-[28px]
-        border border-gray-200
-        bg-white
-        shadow-sm
-        transition-all duration-300
-        hover:shadow-md
-        dark:border-gray-800
-        dark:bg-[#101917]
-      "
-    >
+    <div className="w-full">
       {/* =====================================================
-          BACKGROUND DECORATION
-      ====================================================== */}
+          EMPTY STATE
+      ===================================================== */}
 
-      <div
-        className="
-          pointer-events-none
-          absolute -right-24 -top-24
-          h-72 w-72
-          rounded-full
-          bg-emerald-400/10
-          blur-3xl
-          dark:bg-emerald-500/5
-        "
-      />
-
-      <div
-        className="
-          pointer-events-none
-          absolute -bottom-28 -left-24
-          h-64 w-64
-          rounded-full
-          bg-blue-400/5
-          blur-3xl
-        "
-      />
-
-      <div className="relative p-5 sm:p-7 lg:p-8">
-        {/* =====================================================
-            HEADER
-        ====================================================== */}
-
+      {!hasExpenses && (
         <div
           className="
-            flex flex-col gap-5
-            border-b border-gray-100
-            pb-6
-            sm:flex-row
-            sm:items-center
-            sm:justify-between
-            dark:border-gray-800
+            flex flex-col
+            items-center
+            justify-center
+            rounded-2xl
+            border border-dashed
+            border-gray-300
+            bg-gray-50
+            px-6 py-12
+            text-center
+            dark:border-gray-700
+            dark:bg-gray-900/50
           "
         >
-          {/* AI Title */}
+          <div
+            className="
+              flex h-16 w-16
+              items-center justify-center
+              rounded-2xl
+              bg-emerald-50
+              text-emerald-600
+              dark:bg-emerald-950/50
+              dark:text-emerald-400
+            "
+          >
+            <FaLightbulb className="text-2xl" />
+          </div>
 
-          <div className="flex items-center gap-4">
+          <h3
+            className="
+              mt-5
+              text-base
+              font-semibold
+              text-gray-900
+              dark:text-white
+            "
+          >
+            No spending data yet
+          </h3>
+
+          <p
+            className="
+              mt-2
+              max-w-md
+              text-sm
+              leading-6
+              text-gray-500
+              dark:text-gray-400
+            "
+          >
+            Add some expenses first. SmartReceipts AI will then analyze your
+            spending and provide personalized financial recommendations.
+          </p>
+        </div>
+      )}
+
+      {/* =====================================================
+          READY STATE
+      ===================================================== */}
+
+      {hasExpenses && !insights && !isLoading && (
+        <div
+          className="
+            rounded-2xl
+            border border-emerald-100
+            bg-gradient-to-br
+            from-emerald-50
+            to-white
+            p-5
+            dark:border-emerald-900/40
+            dark:from-emerald-950/30
+            dark:to-gray-900
+          "
+        >
+          <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
             <div
               className="
-                relative
-                flex h-14 w-14
+                flex h-12 w-12
                 shrink-0
                 items-center justify-center
-                rounded-2xl
-                bg-emerald-50
+                rounded-xl
+                bg-white
                 text-emerald-600
-                dark:bg-emerald-950/50
+                shadow-sm
+                dark:bg-gray-800
                 dark:text-emerald-400
               "
             >
-              <FaBrain className="text-2xl" />
-
-              <span
-                className="
-                  absolute -right-1 -top-1
-                  flex h-4 w-4
-                  items-center justify-center
-                  rounded-full
-                  bg-emerald-500
-                  text-white
-                "
-              >
-                <span className="h-1.5 w-1.5 rounded-full bg-white" />
-              </span>
+              <FaRobot className="text-lg" />
             </div>
 
-            <div>
-              <div className="flex flex-wrap items-center gap-2">
-                <h2
-                  className="
-                    text-xl
-                    font-bold
-                    tracking-tight
-                    text-gray-900
-                    dark:text-white
-                  "
-                >
-                  AI Financial Insights
-                </h2>
-
-                <span
-                  className="
-                    inline-flex
-                    items-center gap-1.5
-                    rounded-full
-                    border border-emerald-200
-                    bg-emerald-50
-                    px-2.5 py-1
-                    text-[10px]
-                    font-bold
-                    uppercase
-                    tracking-wider
-                    text-emerald-700
-                    dark:border-emerald-900/60
-                    dark:bg-emerald-950/40
-                    dark:text-emerald-400
-                  "
-                >
-                  <FaStar className="text-[9px]" />
-                  AI Powered
-                </span>
-              </div>
+            <div className="flex-1">
+              <h3
+                className="
+                  text-sm
+                  font-bold
+                  text-gray-900
+                  dark:text-white
+                "
+              >
+                Your spending report is ready
+              </h3>
 
               <p
                 className="
-                  mt-1.5
-                  max-w-xl
+                  mt-1
                   text-sm
+                  leading-6
                   text-gray-500
                   dark:text-gray-400
                 "
               >
-                Understand your spending patterns and discover smarter ways to
-                manage your money.
+                Let SmartReceipts AI review your expenses and identify important
+                spending patterns and opportunities to save.
               </p>
             </div>
-          </div>
 
-          {/* Analyze Button */}
-
-          <button
-            type="button"
-            onClick={onAnalyze}
-            disabled={isLoading || !hasExpenses}
-            className="
-              inline-flex
-              items-center
-              justify-center
-              gap-2
-              rounded-xl
-              bg-emerald-600
-              px-5 py-3
-              text-sm
-              font-semibold
-              text-white
-              shadow-sm
-              transition-all duration-200
-              hover:-translate-y-0.5
-              hover:bg-emerald-700
-              hover:shadow-md
-              disabled:cursor-not-allowed
-              disabled:translate-y-0
-              disabled:bg-gray-200
-              disabled:text-gray-400
-              dark:bg-emerald-500
-              dark:text-gray-950
-              dark:hover:bg-emerald-400
-              dark:disabled:bg-gray-800
-              dark:disabled:text-gray-500
-            "
-          >
-            {isLoading ? (
-              <>
-                <span
-                  className="
-                    h-4 w-4
-                    animate-spin
-                    rounded-full
-                    border-2
-                    border-white/40
-                    border-t-white
-                    dark:border-gray-900/40
-                    dark:border-t-gray-900
-                  "
-                />
-                Analyzing...
-              </>
-            ) : (
-              <>
-                <FaRobot />
-                Analyze Spending
-              </>
-            )}
-          </button>
-        </div>
-
-        {/* =====================================================
-            EMPTY STATE
-        ====================================================== */}
-
-        {!hasExpenses && (
-          <div
-            className="
-              mt-6
-              flex flex-col
-              items-center
-              justify-center
-              rounded-2xl
-              border border-dashed
-              border-gray-300
-              bg-gray-50
-              px-6 py-12
-              text-center
-              dark:border-gray-700
-              dark:bg-gray-900/50
-            "
-          >
-            <div
+            <button
+              type="button"
+              onClick={onAnalyze}
+              disabled={isLoading}
               className="
-                flex h-16 w-16
-                items-center justify-center
-                rounded-2xl
-                bg-emerald-50
-                text-emerald-600
-                dark:bg-emerald-950/50
-                dark:text-emerald-400
-              "
-            >
-              <FaLightbulb className="text-2xl" />
-            </div>
-
-            <h3
-              className="
-                mt-5
-                text-base
-                font-semibold
-                text-gray-900
-                dark:text-white
-              "
-            >
-              No spending data yet
-            </h3>
-
-            <p
-              className="
-                mt-2
-                max-w-md
+                shrink-0
+                rounded-xl
+                bg-emerald-500
+                px-5
+                py-2.5
                 text-sm
-                leading-6
-                text-gray-500
-                dark:text-gray-400
+                font-bold
+                text-[#031815]
+                transition
+                hover:bg-emerald-400
+                disabled:cursor-not-allowed
+                disabled:opacity-50
               "
             >
-              Add some expenses first. Once you have spending data,
-              SmartReceipts AI will analyze your financial activity.
-            </p>
+              Analyze Spending
+            </button>
           </div>
-        )}
+        </div>
+      )}
 
-        {/* =====================================================
-            READY STATE
-        ====================================================== */}
+      {/* =====================================================
+          LOADING
+      ===================================================== */}
 
-        {hasExpenses && !insights && !isLoading && (
-          <div
-            className="
-              mt-6
-              flex items-start gap-4
-              rounded-2xl
-              border border-emerald-100
-              bg-gradient-to-r
-              from-emerald-50
-              to-white
-              p-5
-              dark:border-emerald-900/40
-              dark:from-emerald-950/30
-              dark:to-gray-900
-            "
-          >
+      {isLoading && (
+        <div
+          className="
+            rounded-2xl
+            border border-emerald-100
+            bg-emerald-50/70
+            p-5
+            dark:border-emerald-900/40
+            dark:bg-emerald-950/20
+          "
+        >
+          <div className="flex items-center gap-4">
             <div
               className="
                 flex h-11 w-11
@@ -304,111 +235,40 @@ function AIInsights({ insights, onAnalyze, isLoading, hasExpenses }) {
                 dark:text-emerald-400
               "
             >
-              <FaLightbulb />
+              <FaRobot className="animate-pulse text-xl" />
             </div>
 
-            <div>
-              <h3
+            <div className="flex-1">
+              <p
                 className="
+                  text-sm
                   font-semibold
-                  text-gray-900
-                  dark:text-white
+                  text-emerald-700
+                  dark:text-emerald-300
                 "
               >
-                Ready to analyze your spending
-              </h3>
+                AI is analyzing your spending...
+              </p>
 
               <p
                 className="
                   mt-1
-                  text-sm
-                  leading-6
-                  text-gray-500
-                  dark:text-gray-400
-                "
-              >
-                Click{" "}
-                <span
-                  className="
-                    font-semibold
-                    text-emerald-600
-                    dark:text-emerald-400
-                  "
-                >
-                  Analyze Spending
-                </span>{" "}
-                to receive personalized observations and saving recommendations.
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* =====================================================
-            LOADING STATE
-        ====================================================== */}
-
-        {isLoading && (
-          <div
-            className="
-              mt-6
-              overflow-hidden
-              rounded-2xl
-              border border-emerald-100
-              bg-emerald-50/70
-              dark:border-emerald-900/40
-              dark:bg-emerald-950/20
-            "
-          >
-            <div className="flex items-center gap-4 p-5">
-              <div
-                className="
-                  flex h-11 w-11
-                  shrink-0
-                  items-center justify-center
-                  rounded-xl
-                  bg-white
+                  text-xs
                   text-emerald-600
-                  shadow-sm
-                  dark:bg-gray-800
                   dark:text-emerald-400
                 "
               >
-                <FaRobot className="animate-pulse text-xl" />
-              </div>
-
-              <div className="flex-1">
-                <p
-                  className="
-                    font-semibold
-                    text-emerald-700
-                    dark:text-emerald-300
-                  "
-                >
-                  AI is analyzing your expenses...
-                </p>
-
-                <p
-                  className="
-                    mt-1
-                    text-sm
-                    text-emerald-600
-                    dark:text-emerald-400
-                  "
-                >
-                  Looking for spending patterns and opportunities to save.
-                </p>
-              </div>
+                Reviewing your expenses, budget, and spending patterns.
+              </p>
 
               <div
                 className="
-                  hidden
-                  h-2
-                  w-24
+                  mt-3
+                  h-1.5
                   overflow-hidden
                   rounded-full
-                  bg-emerald-200
-                  sm:block
-                  dark:bg-emerald-900
+                  bg-emerald-100
+                  dark:bg-emerald-950
                 "
               >
                 <div
@@ -423,432 +283,856 @@ function AIInsights({ insights, onAnalyze, isLoading, hasExpenses }) {
               </div>
             </div>
           </div>
-        )}
+        </div>
+      )}
 
-        {/* =====================================================
-            AI RESULT
-        ====================================================== */}
+      {/* =====================================================
+          AI REPORT
+      ===================================================== */}
 
-        {hasExpenses && insights && !isLoading && (
-          <div className="mt-6">
-            {/* Analysis Complete */}
+      {hasExpenses && insights && !isLoading && (
+        <div className="space-y-5">
+          {/* =================================================
+              REPORT STATUS
+          ================================================= */}
 
-            <div
+          <div
+            className="
+              flex
+              items-center
+              justify-between
+              rounded-xl
+              border
+              border-emerald-100
+              bg-emerald-50/60
+              px-4
+              py-3
+              dark:border-emerald-900/40
+              dark:bg-emerald-950/20
+            "
+          >
+            <div className="flex items-center gap-2">
+              <FaCheckCircle className="text-emerald-500" />
+
+              <span
+                className="
+                  text-sm
+                  font-semibold
+                  text-emerald-700
+                  dark:text-emerald-300
+                "
+              >
+                Financial analysis complete
+              </span>
+            </div>
+
+            <span
               className="
-                mb-5
-                flex
-                items-center
-                justify-between
-                rounded-xl
-                bg-gray-50
-                px-4 py-3
-                dark:bg-gray-900
+                hidden
+                text-xs
+                text-gray-400
+                sm:block
+                dark:text-gray-500
               "
             >
-              <div className="flex items-center gap-2">
-                <FaCheckCircle className="text-emerald-500" />
+              SmartReceipts AI
+            </span>
+          </div>
 
-                <span
+          {/* =================================================
+              FINANCIAL OVERVIEW
+          ================================================= */}
+
+          <div>
+            <div className="mb-3">
+              <h3
+                className="
+                  text-sm
+                  font-bold
+                  text-gray-900
+                  dark:text-white
+                "
+              >
+                Your Financial Overview
+              </h3>
+
+              <p
+                className="
+                  mt-1
+                  text-xs
+                  text-gray-500
+                  dark:text-gray-400
+                "
+              >
+                A quick look at your current spending position.
+              </p>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              {/* TOTAL SPENT */}
+
+              <div
+                className="
+                  rounded-2xl
+                  border
+                  border-gray-200
+                  bg-white
+                  p-4
+                  dark:border-gray-800
+                  dark:bg-gray-900
+                "
+              >
+                <div className="flex items-center justify-between">
+                  <p
+                    className="
+                      text-[10px]
+                      font-bold
+                      uppercase
+                      tracking-wider
+                      text-gray-400
+                    "
+                  >
+                    Total Spent
+                  </p>
+
+                  <div
+                    className="
+                      flex h-8 w-8
+                      items-center justify-center
+                      rounded-lg
+                      bg-blue-50
+                      text-blue-500
+                      dark:bg-blue-950/40
+                      dark:text-blue-400
+                    "
+                  >
+                    <FaChartPie className="text-xs" />
+                  </div>
+                </div>
+
+                <p
                   className="
+                    mt-3
+                    text-xl
+                    font-bold
+                    text-gray-900
+                    dark:text-white
+                  "
+                >
+                  {formatCurrency(numericTotal)}
+                </p>
+
+                <p
+                  className="
+                    mt-1
+                    text-[11px]
+                    text-gray-400
+                  "
+                >
+                  Across {expenses.length} expense
+                  {expenses.length !== 1 ? "s" : ""}
+                </p>
+              </div>
+
+              {/* BUDGET */}
+
+              <div
+                className="
+                  rounded-2xl
+                  border
+                  border-gray-200
+                  bg-white
+                  p-4
+                  dark:border-gray-800
+                  dark:bg-gray-900
+                "
+              >
+                <div className="flex items-center justify-between">
+                  <p
+                    className="
+                      text-[10px]
+                      font-bold
+                      uppercase
+                      tracking-wider
+                      text-gray-400
+                    "
+                  >
+                    Monthly Budget
+                  </p>
+
+                  <div
+                    className="
+                      flex h-8 w-8
+                      items-center justify-center
+                      rounded-lg
+                      bg-emerald-50
+                      text-emerald-500
+                      dark:bg-emerald-950/40
+                      dark:text-emerald-400
+                    "
+                  >
+                    <FaWallet className="text-xs" />
+                  </div>
+                </div>
+
+                <p
+                  className="
+                    mt-3
+                    text-xl
+                    font-bold
+                    text-gray-900
+                    dark:text-white
+                  "
+                >
+                  {numericBudget > 0
+                    ? formatCurrency(numericBudget)
+                    : "Not set"}
+                </p>
+
+                <p
+                  className="
+                    mt-1
+                    text-[11px]
+                    text-gray-400
+                  "
+                >
+                  Monthly spending limit
+                </p>
+              </div>
+
+              {/* REMAINING */}
+
+              <div
+                className="
+                  rounded-2xl
+                  border
+                  border-gray-200
+                  bg-white
+                  p-4
+                  dark:border-gray-800
+                  dark:bg-gray-900
+                "
+              >
+                <div className="flex items-center justify-between">
+                  <p
+                    className="
+                      text-[10px]
+                      font-bold
+                      uppercase
+                      tracking-wider
+                      text-gray-400
+                    "
+                  >
+                    Remaining
+                  </p>
+
+                  <div
+                    className={`
+                      flex h-8 w-8
+                      items-center justify-center
+                      rounded-lg
+                      ${
+                        remaining >= 0
+                          ? "bg-emerald-50 text-emerald-500 dark:bg-emerald-950/40 dark:text-emerald-400"
+                          : "bg-red-50 text-red-500 dark:bg-red-950/40 dark:text-red-400"
+                      }
+                    `}
+                  >
+                    {remaining >= 0 ? (
+                      <FaArrowDown className="text-xs" />
+                    ) : (
+                      <FaArrowUp className="text-xs" />
+                    )}
+                  </div>
+                </div>
+
+                <p
+                  className={`
+                    mt-3
+                    text-xl
+                    font-bold
+                    ${
+                      remaining >= 0
+                        ? "text-emerald-600 dark:text-emerald-400"
+                        : "text-red-600 dark:text-red-400"
+                    }
+                  `}
+                >
+                  {numericBudget > 0
+                    ? formatCurrency(Math.abs(remaining))
+                    : "—"}
+                </p>
+
+                <p
+                  className="
+                    mt-1
+                    text-[11px]
+                    text-gray-400
+                  "
+                >
+                  {numericBudget > 0
+                    ? remaining >= 0
+                      ? "Available to spend"
+                      : "Over your budget"
+                    : "Set a budget to track this"}
+                </p>
+              </div>
+
+              {/* UTILIZATION */}
+
+              <div
+                className="
+                  rounded-2xl
+                  border
+                  border-gray-200
+                  bg-white
+                  p-4
+                  dark:border-gray-800
+                  dark:bg-gray-900
+                "
+              >
+                <div className="flex items-center justify-between">
+                  <p
+                    className="
+                      text-[10px]
+                      font-bold
+                      uppercase
+                      tracking-wider
+                      text-gray-400
+                    "
+                  >
+                    Budget Used
+                  </p>
+
+                  <span
+                    className={`
+                      text-sm
+                      font-bold
+                      ${
+                        isOverBudget
+                          ? "text-red-500"
+                          : isNearBudget
+                            ? "text-yellow-500"
+                            : "text-emerald-500"
+                      }
+                    `}
+                  >
+                    {numericBudget > 0
+                      ? `${budgetPercentage.toFixed(0)}%`
+                      : "—"}
+                  </span>
+                </div>
+
+                <div
+                  className="
+                    mt-4
+                    h-2
+                    overflow-hidden
+                    rounded-full
+                    bg-gray-100
+                    dark:bg-gray-800
+                  "
+                >
+                  <div
+                    className={`
+                      h-full
+                      rounded-full
+                      transition-all
+                      ${
+                        isOverBudget
+                          ? "bg-red-500"
+                          : isNearBudget
+                            ? "bg-yellow-500"
+                            : "bg-emerald-500"
+                      }
+                    `}
+                    style={{
+                      width: numericBudget > 0 ? `${budgetPercentage}%` : "0%",
+                    }}
+                  />
+                </div>
+
+                <p
+                  className="
+                    mt-2
+                    text-[11px]
+                    text-gray-400
+                  "
+                >
+                  {numericBudget > 0
+                    ? isOverBudget
+                      ? "Budget exceeded"
+                      : isNearBudget
+                        ? "Approaching your limit"
+                        : "Within your budget"
+                    : "No monthly budget set"}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* =================================================
+              AI SUMMARY
+          ================================================= */}
+
+          <div
+            className="
+              rounded-2xl
+              border
+              border-emerald-100
+              bg-gradient-to-br
+              from-emerald-50
+              to-white
+              p-5
+              dark:border-emerald-900/40
+              dark:from-emerald-950/30
+              dark:to-gray-900
+            "
+          >
+            <div className="flex items-start gap-4">
+              <div
+                className="
+                  flex h-11 w-11
+                  shrink-0
+                  items-center justify-center
+                  rounded-xl
+                  bg-emerald-100
+                  text-emerald-600
+                  dark:bg-emerald-900/50
+                  dark:text-emerald-400
+                "
+              >
+                <FaLightbulb />
+              </div>
+
+              <div>
+                <p
+                  className="
+                    text-[10px]
+                    font-bold
+                    uppercase
+                    tracking-wider
+                    text-emerald-600
+                    dark:text-emerald-400
+                  "
+                >
+                  What AI found
+                </p>
+
+                <p
+                  className="
+                    mt-2
                     text-sm
-                    font-semibold
+                    leading-7
                     text-gray-700
                     dark:text-gray-300
                   "
                 >
-                  AI Analysis Complete
-                </span>
+                  {insights.summary}
+                </p>
               </div>
-
-              <span
-                className="
-                  hidden
-                  text-xs
-                  text-gray-400
-                  sm:block
-                  dark:text-gray-500
-                "
-              >
-                SmartReceipts AI
-              </span>
             </div>
+          </div>
 
-            {/* =================================================
-                SUMMARY
-            ================================================== */}
+          {/* =================================================
+              KEY FINDINGS
+          ================================================= */}
+
+          <div className="grid gap-4 md:grid-cols-2">
+            {/* TOP CATEGORY */}
 
             <div
               className="
                 rounded-2xl
-                border border-emerald-100
-                bg-emerald-50/60
-                p-5
-                dark:border-emerald-900/40
-                dark:bg-emerald-950/20
-              "
-            >
-              <div className="flex items-start gap-4">
-                <div
-                  className="
-                    flex h-11 w-11
-                    shrink-0
-                    items-center justify-center
-                    rounded-xl
-                    bg-emerald-100
-                    text-emerald-600
-                    dark:bg-emerald-900/50
-                    dark:text-emerald-400
-                  "
-                >
-                  <FaLightbulb />
-                </div>
-
-                <div>
-                  <p
-                    className="
-                      text-xs
-                      font-semibold
-                      uppercase
-                      tracking-wider
-                      text-emerald-700
-                      dark:text-emerald-400
-                    "
-                  >
-                    Spending Summary
-                  </p>
-
-                  <p
-                    className="
-                      mt-2
-                      text-sm
-                      leading-6
-                      text-gray-700
-                      dark:text-gray-300
-                    "
-                  >
-                    {insights.summary}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* =================================================
-                KEY INSIGHTS
-            ================================================== */}
-
-            <div className="mt-5 grid gap-4 md:grid-cols-2">
-              {/* Highest Category */}
-
-              <div
-                className="
-                  rounded-2xl
-                  border border-gray-200
-                  bg-white
-                  p-5
-                  transition-all duration-200
-                  hover:-translate-y-0.5
-                  hover:shadow-sm
-                  dark:border-gray-800
-                  dark:bg-gray-900
-                "
-              >
-                <p
-                  className="
-                    text-[11px]
-                    font-bold
-                    uppercase
-                    tracking-wider
-                    text-gray-400
-                  "
-                >
-                  Highest Spending Category
-                </p>
-
-                <div className="mt-4 flex items-center gap-3">
-                  <div
-                    className="
-                      flex h-11 w-11
-                      items-center justify-center
-                      rounded-xl
-                      bg-emerald-50
-                      text-emerald-600
-                      dark:bg-emerald-950/50
-                      dark:text-emerald-400
-                    "
-                  >
-                    <FaChartPie />
-                  </div>
-
-                  <div>
-                    <p
-                      className="
-                        text-lg
-                        font-bold
-                        text-gray-900
-                        dark:text-white
-                      "
-                    >
-                      {insights.topCategory}
-                    </p>
-
-                    <p
-                      className="
-                        mt-0.5
-                        text-xs
-                        text-gray-400
-                      "
-                    >
-                      Highest expense category
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Observation */}
-
-              <div
-                className="
-                  rounded-2xl
-                  border border-gray-200
-                  bg-white
-                  p-5
-                  transition-all duration-200
-                  hover:-translate-y-0.5
-                  hover:shadow-sm
-                  dark:border-gray-800
-                  dark:bg-gray-900
-                "
-              >
-                <p
-                  className="
-                    text-[11px]
-                    font-bold
-                    uppercase
-                    tracking-wider
-                    text-gray-400
-                  "
-                >
-                  AI Observation
-                </p>
-
-                <p
-                  className="
-                    mt-4
-                    text-sm
-                    leading-6
-                    text-gray-600
-                    dark:text-gray-300
-                  "
-                >
-                  {insights.observation}
-                </p>
-              </div>
-            </div>
-
-            {/* =================================================
-                RECOMMENDATIONS
-            ================================================== */}
-
-            <div
-              className="
-                mt-5
-                rounded-2xl
-                border border-gray-200
+                border
+                border-gray-200
                 bg-white
                 p-5
                 dark:border-gray-800
                 dark:bg-gray-900
               "
             >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div
-                    className="
-                      flex h-10 w-10
-                      items-center justify-center
-                      rounded-xl
-                      bg-blue-50
-                      text-blue-600
-                      dark:bg-blue-950/40
-                      dark:text-blue-400
-                    "
-                  >
-                    <FaRobot />
-                  </div>
+              <p
+                className="
+                  text-[10px]
+                  font-bold
+                  uppercase
+                  tracking-wider
+                  text-gray-400
+                "
+              >
+                Biggest Spending Area
+              </p>
 
-                  <div>
-                    <h3
-                      className="
-                        font-semibold
-                        text-gray-900
-                        dark:text-white
-                      "
-                    >
-                      AI Recommendations
-                    </h3>
-
-                    <p
-                      className="
-                        text-xs
-                        text-gray-500
-                        dark:text-gray-400
-                      "
-                    >
-                      Practical ways to improve your spending
-                    </p>
-                  </div>
-                </div>
-
-                <FaArrowRight
-                  className="
-                    hidden
-                    text-gray-300
-                    sm:block
-                    dark:text-gray-700
-                  "
-                />
-              </div>
-
-              <div className="mt-5 space-y-3">
-                {insights.recommendations?.map((recommendation, index) => (
-                  <div
-                    key={index}
-                    className="
-                        flex
-                        items-start
-                        gap-3
-                        rounded-xl
-                        border border-gray-100
-                        bg-gray-50
-                        p-4
-                        transition-colors
-                        hover:border-emerald-100
-                        hover:bg-emerald-50/40
-                        dark:border-gray-800
-                        dark:bg-gray-800/70
-                        dark:hover:border-emerald-900
-                        dark:hover:bg-emerald-950/20
-                      "
-                  >
-                    <span
-                      className="
-                          flex h-7 w-7
-                          shrink-0
-                          items-center justify-center
-                          rounded-full
-                          bg-emerald-100
-                          text-xs
-                          font-bold
-                          text-emerald-700
-                          dark:bg-emerald-900/50
-                          dark:text-emerald-400
-                        "
-                    >
-                      {index + 1}
-                    </span>
-
-                    <p
-                      className="
-                          pt-0.5
-                          text-sm
-                          leading-6
-                          text-gray-600
-                          dark:text-gray-300
-                        "
-                    >
-                      {recommendation}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* =================================================
-                SAVING TIP
-            ================================================== */}
-
-            <div
-              className="
-                mt-5
-                rounded-2xl
-                border border-yellow-200
-                bg-yellow-50
-                p-5
-                dark:border-yellow-900/40
-                dark:bg-yellow-950/20
-              "
-            >
-              <div className="flex items-start gap-3">
+              <div className="mt-4 flex items-center gap-4">
                 <div
                   className="
-                    flex h-9 w-9
-                    shrink-0
+                    flex h-12 w-12
                     items-center justify-center
                     rounded-xl
-                    bg-yellow-100
-                    text-yellow-600
-                    dark:bg-yellow-900/40
-                    dark:text-yellow-400
+                    bg-emerald-50
+                    text-emerald-600
+                    dark:bg-emerald-950/50
+                    dark:text-emerald-400
                   "
                 >
-                  <FaLightbulb />
+                  <FaChartPie />
                 </div>
 
                 <div>
-                  <h3
+                  <p
                     className="
-                      font-semibold
-                      text-yellow-800
-                      dark:text-yellow-300
+                      text-lg
+                      font-bold
+                      text-gray-900
+                      dark:text-white
                     "
                   >
-                    Smart Saving Tip
-                  </h3>
+                    {insights.topCategory}
+                  </p>
 
                   <p
                     className="
                       mt-1
-                      text-sm
-                      leading-6
-                      text-yellow-700
-                      dark:text-yellow-400
+                      text-xs
+                      text-gray-400
                     "
                   >
-                    {insights.savingTip}
+                    Category with the highest spending
                   </p>
                 </div>
               </div>
             </div>
 
-            {/* =================================================
-                FOOTER
-            ================================================== */}
+            {/* LARGEST EXPENSE */}
 
             <div
               className="
-                mt-5
-                flex
-                items-center
-                gap-2
-                border-t
-                border-gray-100
-                pt-4
-                text-xs
-                text-gray-400
+                rounded-2xl
+                border
+                border-gray-200
+                bg-white
+                p-5
                 dark:border-gray-800
-                dark:text-gray-500
+                dark:bg-gray-900
               "
             >
-              <FaStar className="text-emerald-500" />
+              <p
+                className="
+                  text-[10px]
+                  font-bold
+                  uppercase
+                  tracking-wider
+                  text-gray-400
+                "
+              >
+                Largest Individual Expense
+              </p>
 
-              <span>
-                Generated by SmartReceipts AI based on your recorded expenses.
-              </span>
+              {highestExpense ? (
+                <div className="mt-4 flex items-center justify-between gap-4">
+                  <div>
+                    <p
+                      className="
+                        text-base
+                        font-bold
+                        text-gray-900
+                        dark:text-white
+                      "
+                    >
+                      {highestExpense.itemName}
+                    </p>
+
+                    <p
+                      className="
+                        mt-1
+                        text-xs
+                        text-gray-400
+                      "
+                    >
+                      Single highest recorded expense
+                    </p>
+                  </div>
+
+                  <p
+                    className="
+                      shrink-0
+                      text-lg
+                      font-bold
+                      text-gray-900
+                      dark:text-white
+                    "
+                  >
+                    {formatCurrency(highestExpense.price)}
+                  </p>
+                </div>
+              ) : (
+                <p className="mt-4 text-sm text-gray-500">
+                  No expense information available.
+                </p>
+              )}
             </div>
           </div>
-        )}
-      </div>
-    </section>
+
+          {/* =================================================
+              AI OBSERVATION
+          ================================================= */}
+
+          <div
+            className="
+              rounded-2xl
+              border
+              border-gray-200
+              bg-white
+              p-5
+              dark:border-gray-800
+              dark:bg-gray-900
+            "
+          >
+            <div className="flex items-center gap-3">
+              <div
+                className="
+                  flex h-10 w-10
+                  items-center justify-center
+                  rounded-xl
+                  bg-blue-50
+                  text-blue-600
+                  dark:bg-blue-950/40
+                  dark:text-blue-400
+                "
+              >
+                <FaRobot />
+              </div>
+
+              <div>
+                <h3
+                  className="
+                    text-sm
+                    font-bold
+                    text-gray-900
+                    dark:text-white
+                  "
+                >
+                  AI Observation
+                </h3>
+
+                <p
+                  className="
+                    text-xs
+                    text-gray-500
+                    dark:text-gray-400
+                  "
+                >
+                  What your spending pattern tells us
+                </p>
+              </div>
+            </div>
+
+            <p
+              className="
+                mt-4
+                text-sm
+                leading-7
+                text-gray-600
+                dark:text-gray-300
+              "
+            >
+              {insights.observation}
+            </p>
+          </div>
+
+          {/* =================================================
+              RECOMMENDATIONS
+          ================================================= */}
+
+          <div
+            className="
+              rounded-2xl
+              border
+              border-gray-200
+              bg-white
+              p-5
+              dark:border-gray-800
+              dark:bg-gray-900
+            "
+          >
+            <div>
+              <div className="flex items-center gap-3">
+                <div
+                  className="
+                    flex h-10 w-10
+                    items-center justify-center
+                    rounded-xl
+                    bg-emerald-50
+                    text-emerald-600
+                    dark:bg-emerald-950/40
+                    dark:text-emerald-400
+                  "
+                >
+                  <FaCheckCircle />
+                </div>
+
+                <div>
+                  <h3
+                    className="
+                      text-sm
+                      font-bold
+                      text-gray-900
+                      dark:text-white
+                    "
+                  >
+                    Recommended Actions
+                  </h3>
+
+                  <p
+                    className="
+                      text-xs
+                      text-gray-500
+                      dark:text-gray-400
+                    "
+                  >
+                    Practical steps you can take
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-5 space-y-3">
+              {insights.recommendations?.map((recommendation, index) => (
+                <div
+                  key={index}
+                  className="
+                      flex
+                      items-start
+                      gap-3
+                      rounded-xl
+                      border
+                      border-gray-100
+                      bg-gray-50
+                      p-4
+                      dark:border-gray-800
+                      dark:bg-gray-800/70
+                    "
+                >
+                  <span
+                    className="
+                        flex h-7 w-7
+                        shrink-0
+                        items-center justify-center
+                        rounded-full
+                        bg-emerald-100
+                        text-xs
+                        font-bold
+                        text-emerald-700
+                        dark:bg-emerald-900/50
+                        dark:text-emerald-400
+                      "
+                  >
+                    {index + 1}
+                  </span>
+
+                  <p
+                    className="
+                        pt-0.5
+                        text-sm
+                        leading-6
+                        text-gray-600
+                        dark:text-gray-300
+                      "
+                  >
+                    {recommendation}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* =================================================
+              SMART SAVING TIP
+          ================================================= */}
+
+          <div
+            className="
+              rounded-2xl
+              border
+              border-yellow-200
+              bg-yellow-50
+              p-5
+              dark:border-yellow-900/40
+              dark:bg-yellow-950/20
+            "
+          >
+            <div className="flex items-start gap-3">
+              <div
+                className="
+                  flex h-10 w-10
+                  shrink-0
+                  items-center justify-center
+                  rounded-xl
+                  bg-yellow-100
+                  text-yellow-600
+                  dark:bg-yellow-900/40
+                  dark:text-yellow-400
+                "
+              >
+                <FaLightbulb />
+              </div>
+
+              <div>
+                <h3
+                  className="
+                    text-sm
+                    font-bold
+                    text-yellow-800
+                    dark:text-yellow-300
+                  "
+                >
+                  Your Smart Saving Tip
+                </h3>
+
+                <p
+                  className="
+                    mt-2
+                    text-sm
+                    leading-6
+                    text-yellow-700
+                    dark:text-yellow-400
+                  "
+                >
+                  {insights.savingTip}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* =================================================
+              FOOTER
+          ================================================= */}
+
+          <div
+            className="
+              flex
+              items-center
+              gap-2
+              border-t
+              border-gray-100
+              pt-4
+              text-[11px]
+              text-gray-400
+              dark:border-gray-800
+              dark:text-gray-500
+            "
+          >
+            <FaStar className="text-emerald-500" />
+
+            <span>
+              This report was generated by SmartReceipts AI from your recorded
+              expenses.
+            </span>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 

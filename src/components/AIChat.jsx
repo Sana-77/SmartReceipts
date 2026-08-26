@@ -26,6 +26,7 @@ function AIChat({ expenses, budget, total, isOpen, onOpen, onClose }) {
 
     messagesEndRef.current?.scrollIntoView({
       behavior: "smooth",
+      block: "nearest",
     });
   }, [messages, isLoading, isOpen]);
 
@@ -170,14 +171,16 @@ function AIChat({ expenses, budget, total, isOpen, onOpen, onClose }) {
         <div
           className="
             fixed
-            bottom-6
-            right-6
+            bottom-4
+            right-4
             z-[100]
 
             flex
-            h-[600px]
+            h-[calc(100vh-2rem)]
+            max-h-[600px]
             w-[380px]
             max-w-[calc(100vw-2rem)]
+            min-h-0
             flex-col
 
             overflow-hidden
@@ -191,6 +194,10 @@ function AIChat({ expenses, budget, total, isOpen, onOpen, onClose }) {
 
             dark:border-gray-700
             dark:bg-gray-900
+
+            sm:bottom-6
+            sm:right-6
+            sm:h-[600px]
           "
         >
           {/* =================================================
@@ -200,6 +207,7 @@ function AIChat({ expenses, budget, total, isOpen, onOpen, onClose }) {
           <div
             className="
               flex
+              shrink-0
               items-center
               justify-between
 
@@ -215,6 +223,7 @@ function AIChat({ expenses, budget, total, isOpen, onOpen, onClose }) {
                   flex
                   h-10
                   w-10
+                  shrink-0
                   items-center
                   justify-center
                   rounded-xl
@@ -224,7 +233,7 @@ function AIChat({ expenses, budget, total, isOpen, onOpen, onClose }) {
                 <FaRobot />
               </div>
 
-              <div>
+              <div className="min-w-0">
                 <h2 className="font-semibold">SmartReceipts AI</h2>
 
                 <p className="text-xs text-emerald-50">
@@ -233,8 +242,8 @@ function AIChat({ expenses, budget, total, isOpen, onOpen, onClose }) {
               </div>
             </div>
 
-            <div className="flex items-center gap-1">
-              {/* Clear */}
+            <div className="flex shrink-0 items-center gap-1">
+              {/* CLEAR CHAT */}
 
               <button
                 type="button"
@@ -253,6 +262,10 @@ function AIChat({ expenses, budget, total, isOpen, onOpen, onClose }) {
 
                   hover:bg-white/15
                   hover:text-white
+
+                  focus:outline-none
+                  focus:ring-2
+                  focus:ring-white/40
                 "
                 title="Clear chat"
                 aria-label="Clear chat"
@@ -260,7 +273,7 @@ function AIChat({ expenses, budget, total, isOpen, onOpen, onClose }) {
                 <FaTrash className="text-sm" />
               </button>
 
-              {/* Close */}
+              {/* CLOSE */}
 
               <button
                 type="button"
@@ -294,13 +307,18 @@ function AIChat({ expenses, budget, total, isOpen, onOpen, onClose }) {
 
           {/* =================================================
               MESSAGES
+              
+              IMPORTANT:
+              min-h-0 allows this flex child to shrink.
+              overflow-y-auto makes ONLY the messages scroll.
           ================================================== */}
 
           <div
             className="
+              min-h-0
               flex-1
-              space-y-4
               overflow-y-auto
+              overscroll-contain
 
               bg-gray-50
               p-4
@@ -308,71 +326,101 @@ function AIChat({ expenses, budget, total, isOpen, onOpen, onClose }) {
               dark:bg-gray-950
             "
           >
-            {messages.map((msg, index) => (
-              <div
-                key={index}
-                className={`flex ${
-                  msg.role === "user" ? "justify-end" : "justify-start"
-                }`}
-              >
+            <div className="space-y-4">
+              {messages.map((msg, index) => (
                 <div
-                  className={`max-w-[85%] whitespace-pre-wrap rounded-2xl px-4 py-3 text-sm leading-relaxed ${
-                    msg.role === "user"
-                      ? "rounded-br-md bg-emerald-500 text-white"
-                      : "rounded-bl-md bg-white text-gray-700 shadow-sm dark:bg-gray-800 dark:text-gray-200"
+                  key={index}
+                  className={`flex ${
+                    msg.role === "user" ? "justify-end" : "justify-start"
                   }`}
                 >
-                  {msg.content}
+                  <div
+                    className={`max-w-[85%] whitespace-pre-wrap rounded-2xl px-4 py-3 text-sm leading-relaxed ${
+                      msg.role === "user"
+                        ? "rounded-br-md bg-emerald-500 text-white"
+                        : "rounded-bl-md bg-white text-gray-700 shadow-sm dark:bg-gray-800 dark:text-gray-200"
+                    }`}
+                  >
+                    {msg.content}
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
 
-            {/* Loading */}
+              {/* LOADING */}
 
-            {isLoading && (
-              <div className="flex justify-start">
-                <div
-                  className="
-                    rounded-2xl
-                    rounded-bl-md
-                    bg-white
-                    px-4
-                    py-3
-                    shadow-sm
-                    dark:bg-gray-800
-                  "
-                >
-                  <div className="flex items-center gap-2">
-                    <FaRobot className="text-emerald-500" />
+              {isLoading && (
+                <div className="flex justify-start">
+                  <div
+                    className="
+                      rounded-2xl
+                      rounded-bl-md
+                      bg-white
+                      px-4
+                      py-3
+                      shadow-sm
+                      dark:bg-gray-800
+                    "
+                  >
+                    <div className="flex items-center gap-2">
+                      <FaRobot className="text-emerald-500" />
 
-                    <div className="flex gap-1">
-                      <span className="h-2 w-2 animate-bounce rounded-full bg-gray-400" />
+                      <div className="flex gap-1">
+                        <span
+                          className="
+                            h-2
+                            w-2
+                            animate-bounce
+                            rounded-full
+                            bg-gray-400
+                          "
+                        />
 
-                      <span
-                        className="h-2 w-2 animate-bounce rounded-full bg-gray-400"
-                        style={{ animationDelay: "150ms" }}
-                      />
+                        <span
+                          className="
+                            h-2
+                            w-2
+                            animate-bounce
+                            rounded-full
+                            bg-gray-400
+                          "
+                          style={{
+                            animationDelay: "150ms",
+                          }}
+                        />
 
-                      <span
-                        className="h-2 w-2 animate-bounce rounded-full bg-gray-400"
-                        style={{ animationDelay: "300ms" }}
-                      />
+                        <span
+                          className="
+                            h-2
+                            w-2
+                            animate-bounce
+                            rounded-full
+                            bg-gray-400
+                          "
+                          style={{
+                            animationDelay: "300ms",
+                          }}
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            <div ref={messagesEndRef} />
+              <div ref={messagesEndRef} />
+            </div>
           </div>
 
           {/* =================================================
               SUGGESTIONS
+              
+              This area stays fixed.
+              It does NOT scroll with messages.
           ================================================== */}
 
           {messages.length === 1 && !isLoading && (
             <div
               className="
+                shrink-0
                 border-t
                 border-gray-200
                 bg-white
@@ -387,26 +435,32 @@ function AIChat({ expenses, budget, total, isOpen, onOpen, onClose }) {
                 Try asking:
               </p>
 
-              <div className="flex gap-2 overflow-x-auto pb-1">
+              <div
+                className="
+                        flex
+                        flex-wrap
+                        gap-2
+                      "
+              >
                 {suggestedQuestions.map((question) => (
                   <button
                     key={question}
                     type="button"
                     onClick={() => handleSuggestion(question)}
                     className="
-                      whitespace-nowrap
+                      max-w-full
                       rounded-full
                       border
                       border-emerald-200
                       bg-emerald-50
                       px-3
                       py-1.5
+                      text-left
                       text-xs
                       font-medium
                       text-emerald-700
 
                       transition
-
                       hover:bg-emerald-100
 
                       dark:border-emerald-800
@@ -423,12 +477,15 @@ function AIChat({ expenses, budget, total, isOpen, onOpen, onClose }) {
 
           {/* =================================================
               INPUT
+              
+              shrink-0 keeps this permanently at the bottom.
           ================================================== */}
 
           <form
             onSubmit={handleSendMessage}
             className="
               flex
+              shrink-0
               items-center
               gap-2
 

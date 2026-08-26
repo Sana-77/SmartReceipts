@@ -19,10 +19,14 @@ function ExpenseForm({
   const [price, setPrice] = useState("");
   const [receiptImage, setReceiptImage] = useState(null);
 
+  // =====================================================
+  // LOAD / RESET FORM
+  // =====================================================
+
   useEffect(() => {
     if (editingExpense) {
-      setItemName(editingExpense.itemName);
-      setPrice(String(editingExpense.price));
+      setItemName(editingExpense.itemName || "");
+      setPrice(String(editingExpense.price || ""));
       setReceiptImage(editingExpense.receiptImage || null);
     } else {
       setItemName("");
@@ -30,6 +34,10 @@ function ExpenseForm({
       setReceiptImage(null);
     }
   }, [editingExpense]);
+
+  // =====================================================
+  // RECEIPT IMAGE
+  // =====================================================
 
   const handleReceiptChange = (e) => {
     const file = e.target.files?.[0];
@@ -59,6 +67,10 @@ function ExpenseForm({
     setReceiptImage(null);
   };
 
+  // =====================================================
+  // SUBMIT
+  // =====================================================
+
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -84,6 +96,10 @@ function ExpenseForm({
     setReceiptImage(null);
   };
 
+  // =====================================================
+  // CANCEL
+  // =====================================================
+
   const handleCancel = () => {
     setItemName("");
     setPrice("");
@@ -94,6 +110,10 @@ function ExpenseForm({
     }
   };
 
+  // =====================================================
+  // INPUT STYLES
+  // =====================================================
+
   const inputClasses = `
     w-full
     rounded-xl
@@ -101,131 +121,51 @@ function ExpenseForm({
     border-gray-200
     bg-gray-50
     px-4
-    py-3.5
+    py-3
     text-sm
     font-medium
     text-gray-900
     outline-none
     transition-all
     duration-200
-
     placeholder:text-gray-400
-
     hover:border-gray-300
-
     focus:border-emerald-500
     focus:bg-white
     focus:ring-4
     focus:ring-emerald-500/10
-
     disabled:cursor-not-allowed
     disabled:opacity-60
-
     dark:border-gray-700
     dark:bg-gray-900
     dark:text-white
     dark:placeholder:text-gray-600
-
     dark:hover:border-gray-600
-
     dark:focus:border-emerald-500
     dark:focus:bg-gray-950
     dark:focus:ring-emerald-500/10
   `;
 
+  // =====================================================
+  // UI
+  // =====================================================
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      {/* =====================================================
-          FORM HEADER
-      ====================================================== */}
-
-      <div
-        className="
-          flex
-          items-start
-          justify-between
-          gap-4
-          rounded-2xl
-          border
-          border-gray-200
-          bg-gray-50
-          p-4
-          dark:border-gray-800
-          dark:bg-gray-900/60
-        "
-      >
-        <div className="flex items-center gap-3">
-          <div
-            className="
-              flex
-              h-11
-              w-11
-              shrink-0
-              items-center
-              justify-center
-              rounded-xl
-              bg-emerald-50
-              text-emerald-600
-              dark:bg-emerald-950/50
-              dark:text-emerald-400
-            "
-          >
-            {editingExpense ? <FaEdit /> : <FaPlus />}
-          </div>
-
-          <div>
-            <h3 className="text-sm font-bold text-gray-900 dark:text-white">
-              {editingExpense ? "Edit Expense" : "Add New Expense"}
-            </h3>
-
-            <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
-              {editingExpense
-                ? "Update your expense details below."
-                : "Record a new expense and let AI categorize it."}
-            </p>
-          </div>
-        </div>
-
-        {editingExpense && (
-          <span
-            className="
-              hidden
-              rounded-full
-              border
-              border-emerald-200
-              bg-emerald-50
-              px-2.5
-              py-1
-              text-[10px]
-              font-bold
-              uppercase
-              tracking-wider
-              text-emerald-700
-              sm:inline-flex
-              dark:border-emerald-900/60
-              dark:bg-emerald-950/40
-              dark:text-emerald-400
-            "
-          >
-            Editing
-          </span>
-        )}
-      </div>
-
-      {/* =====================================================
+    <form onSubmit={handleSubmit} className="space-y-5">
+      {/* =================================================
           EXPENSE DETAILS
-      ====================================================== */}
+      ================================================= */}
 
-      <div className="grid gap-5 sm:grid-cols-2">
-        {/* Item Name */}
+      <div className="grid gap-4 sm:grid-cols-2">
+        {/* ITEM NAME */}
 
         <div className="sm:col-span-2">
           <label
             htmlFor="expense-item-name"
             className="
-              mb-2
+              mb-1.5
               block
-              text-xs
+              text-[11px]
               font-semibold
               uppercase
               tracking-wide
@@ -246,20 +186,20 @@ function ExpenseForm({
             className={inputClasses}
           />
 
-          <p className="mt-2 text-xs text-gray-400 dark:text-gray-500">
-            Enter a clear name so AI can categorize the expense accurately.
+          <p className="mt-1.5 text-[10px] text-gray-400 dark:text-gray-500">
+            Use a clear name so AI can categorize the expense accurately.
           </p>
         </div>
 
-        {/* Price */}
+        {/* PRICE */}
 
         <div>
           <label
             htmlFor="expense-price"
             className="
-              mb-2
+              mb-1.5
               block
-              text-xs
+              text-[11px]
               font-semibold
               uppercase
               tracking-wide
@@ -301,7 +241,7 @@ function ExpenseForm({
           </div>
         </div>
 
-        {/* AI Category Notice */}
+        {/* AI CATEGORY */}
 
         <div
           className="
@@ -312,8 +252,8 @@ function ExpenseForm({
             border
             border-emerald-100
             bg-emerald-50/70
-            px-4
-            py-3
+            px-3
+            py-2.5
             dark:border-emerald-900/40
             dark:bg-emerald-950/20
           "
@@ -321,8 +261,8 @@ function ExpenseForm({
           <div
             className="
               flex
-              h-9
-              w-9
+              h-8
+              w-8
               shrink-0
               items-center
               justify-center
@@ -334,30 +274,31 @@ function ExpenseForm({
               dark:text-emerald-400
             "
           >
-            <FaReceipt />
+            <FaReceipt className="text-sm" />
           </div>
 
           <div>
-            <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-300">
+            <p className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-300">
               AI Categorization
             </p>
 
-            <p className="mt-0.5 text-[11px] text-emerald-600 dark:text-emerald-400">
-              Your expense will be categorized automatically.
+            <p className="mt-0.5 text-[10px] text-emerald-600 dark:text-emerald-400">
+              Expense will be categorized automatically.
             </p>
           </div>
         </div>
       </div>
 
-      {/* =====================================================
+      {/* =================================================
           RECEIPT UPLOAD
-      ====================================================== */}
+      ================================================= */}
 
       <div>
-        <div className="mb-2 flex items-center justify-between">
+        <div className="mb-1.5 flex items-center justify-between">
           <label
+            htmlFor="receipt-upload"
             className="
-              text-xs
+              text-[11px]
               font-semibold
               uppercase
               tracking-wide
@@ -368,26 +309,25 @@ function ExpenseForm({
             Receipt
           </label>
 
-          <span className="text-[11px] text-gray-400 dark:text-gray-500">
+          <span className="text-[10px] text-gray-400 dark:text-gray-500">
             Optional
           </span>
         </div>
 
         {!receiptImage ? (
           <label
+            htmlFor="receipt-upload"
             className={`
               group
               flex
               cursor-pointer
-              flex-col
               items-center
-              justify-center
-              rounded-2xl
+              gap-4
+              rounded-xl
               border-2
               border-dashed
-              px-6
-              py-8
-              text-center
+              px-4
+              py-4
               transition-all
               duration-200
 
@@ -401,11 +341,12 @@ function ExpenseForm({
             <div
               className="
                 flex
-                h-12
-                w-12
+                h-10
+                w-10
+                shrink-0
                 items-center
                 justify-center
-                rounded-xl
+                rounded-lg
                 bg-white
                 text-emerald-600
                 shadow-sm
@@ -416,35 +357,39 @@ function ExpenseForm({
                 dark:text-emerald-400
               "
             >
-              <FaUpload />
+              <FaUpload className="text-sm" />
             </div>
 
-            <p className="mt-3 text-sm font-semibold text-gray-700 dark:text-gray-200">
-              Upload a receipt
-            </p>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-semibold text-gray-700 dark:text-gray-200">
+                Upload a receipt
+              </p>
 
-            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-              Click to browse your device
-            </p>
+              <p className="mt-0.5 text-[10px] text-gray-500 dark:text-gray-400">
+                Click to browse your device
+              </p>
+            </div>
 
             <span
               className="
-                mt-3
+                hidden
                 rounded-full
                 bg-gray-100
-                px-3
+                px-2.5
                 py-1
-                text-[10px]
+                text-[9px]
                 font-medium
                 text-gray-500
+                sm:block
                 dark:bg-gray-800
                 dark:text-gray-400
               "
             >
-              JPG, PNG or WEBP • Max 2MB
+              JPG, PNG, WEBP • 2MB
             </span>
 
             <input
+              id="receipt-upload"
               type="file"
               accept="image/*"
               onChange={handleReceiptChange}
@@ -457,11 +402,11 @@ function ExpenseForm({
             className="
               relative
               overflow-hidden
-              rounded-2xl
+              rounded-xl
               border
               border-gray-200
               bg-gray-50
-              p-3
+              p-2
               dark:border-gray-700
               dark:bg-gray-900
             "
@@ -469,7 +414,7 @@ function ExpenseForm({
             <div
               className="
                 overflow-hidden
-                rounded-xl
+                rounded-lg
                 border
                 border-gray-200
                 bg-white
@@ -480,21 +425,17 @@ function ExpenseForm({
               <img
                 src={receiptImage}
                 alt="Receipt preview"
-                className="
-                  max-h-72
-                  w-full
-                  object-contain
-                "
+                className="max-h-44 w-full object-contain"
               />
             </div>
 
-            <div className="mt-3 flex items-center justify-between">
+            <div className="mt-2 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div
                   className="
                     flex
-                    h-8
-                    w-8
+                    h-7
+                    w-7
                     items-center
                     justify-center
                     rounded-lg
@@ -504,15 +445,15 @@ function ExpenseForm({
                     dark:text-emerald-400
                   "
                 >
-                  <FaImage className="text-xs" />
+                  <FaImage className="text-[10px]" />
                 </div>
 
                 <div>
-                  <p className="text-xs font-semibold text-gray-700 dark:text-gray-200">
+                  <p className="text-[11px] font-semibold text-gray-700 dark:text-gray-200">
                     Receipt attached
                   </p>
 
-                  <p className="text-[10px] text-gray-400 dark:text-gray-500">
+                  <p className="text-[9px] text-gray-400 dark:text-gray-500">
                     Image ready to save
                   </p>
                 </div>
@@ -524,11 +465,11 @@ function ExpenseForm({
                 disabled={isCategorizing}
                 className="
                   flex
-                  h-9
-                  w-9
+                  h-8
+                  w-8
                   items-center
                   justify-center
-                  rounded-xl
+                  rounded-lg
                   border
                   border-red-200
                   bg-red-50
@@ -546,18 +487,30 @@ function ExpenseForm({
                 aria-label="Remove receipt"
                 title="Remove receipt"
               >
-                <FaTimes className="text-sm" />
+                <FaTimes className="text-xs" />
               </button>
             </div>
           </div>
         )}
       </div>
 
-      {/* =====================================================
+      {/* =================================================
           ACTION BUTTONS
-      ====================================================== */}
+      ================================================= */}
 
-      <div className="flex flex-col-reverse gap-3 border-t border-gray-200 pt-5 sm:flex-row dark:border-gray-800">
+      <div
+        className="
+          flex
+          flex-col-reverse
+          gap-2
+          border-t
+          border-gray-200
+          pt-4
+          sm:flex-row
+          sm:justify-end
+          dark:border-gray-800
+        "
+      >
         {editingExpense && (
           <button
             type="button"
@@ -569,7 +522,7 @@ function ExpenseForm({
               border-gray-200
               bg-white
               px-5
-              py-3.5
+              py-2.5
               text-sm
               font-semibold
               text-gray-600
@@ -579,7 +532,6 @@ function ExpenseForm({
               hover:bg-gray-50
               disabled:cursor-not-allowed
               disabled:opacity-50
-              sm:w-auto
               dark:border-gray-700
               dark:bg-gray-900
               dark:text-gray-300
@@ -596,14 +548,13 @@ function ExpenseForm({
           className="
             group
             flex
-            flex-1
             items-center
             justify-center
             gap-2
             rounded-xl
             bg-emerald-600
             px-6
-            py-3.5
+            py-2.5
             text-sm
             font-semibold
             text-white

@@ -30,18 +30,33 @@ function DashboardNav({ onOpenAI, onAddExpense, onOpenBudget }) {
           icon: <FaReceipt />,
         },
         {
-          id: "add-expense",
-          label: "Add Receipt",
-          icon: <FaReceipt />,
-          action: "addExpense",
-        },
-        {
           id: "analytics",
           label: "Analytics",
           icon: <FaChartBar />,
         },
       ],
     },
+
+    {
+      title: "Quick Actions",
+      items: [
+        {
+          id: "add-expense",
+          label: "Add Receipt",
+          icon: <FaReceipt />,
+          action: "addExpense",
+          highlight: true,
+        },
+        {
+          id: "budget",
+          label: "Set Budget",
+          icon: <FaWallet />,
+          action: "openBudget",
+          highlight: true,
+        },
+      ],
+    },
+
     {
       title: "Intelligence",
       items: [
@@ -51,12 +66,6 @@ function DashboardNav({ onOpenAI, onAddExpense, onOpenBudget }) {
           icon: <FaRobot />,
         },
         {
-          id: "budget",
-          label: "Budget",
-          icon: <FaWallet />,
-          action: "openBudget",
-        },
-        {
           id: "ai-chat",
           label: "AI Assistant",
           icon: <FaRobot />,
@@ -64,6 +73,7 @@ function DashboardNav({ onOpenAI, onAddExpense, onOpenBudget }) {
         },
       ],
     },
+
     {
       title: "Management",
       items: [
@@ -77,11 +87,19 @@ function DashboardNav({ onOpenAI, onAddExpense, onOpenBudget }) {
   ];
 
   const handleNavigation = (item) => {
+    // ============================================
+    // AI ASSISTANT
+    // ============================================
+
     if (item.action === "openAI") {
       onOpenAI?.();
       setSidebarOpen(false);
       return;
     }
+
+    // ============================================
+    // ADD RECEIPT MODAL
+    // ============================================
 
     if (item.action === "addExpense") {
       onAddExpense?.();
@@ -89,11 +107,19 @@ function DashboardNav({ onOpenAI, onAddExpense, onOpenBudget }) {
       return;
     }
 
+    // ============================================
+    // BUDGET MODAL
+    // ============================================
+
     if (item.action === "openBudget") {
       onOpenBudget?.();
       setSidebarOpen(false);
       return;
     }
+
+    // ============================================
+    // NORMAL NAVIGATION
+    // ============================================
 
     const element = document.getElementById(item.id);
 
@@ -109,7 +135,9 @@ function DashboardNav({ onOpenAI, onAddExpense, onOpenBudget }) {
 
   return (
     <>
-      {/* MOBILE MENU BUTTON */}
+      {/* =====================================================
+          MOBILE MENU BUTTON
+      ===================================================== */}
 
       <button
         type="button"
@@ -117,15 +145,31 @@ function DashboardNav({ onOpenAI, onAddExpense, onOpenBudget }) {
         aria-expanded={sidebarOpen}
         onClick={() => setSidebarOpen(true)}
         className="
-          fixed left-4 top-4 z-[90]
-          flex h-10 w-10
-          items-center justify-center
+          fixed
+          left-4
+          top-4
+          z-[90]
+
+          flex
+          h-10
+          w-10
+          items-center
+          justify-center
+
           rounded-xl
-          border border-gray-200
+          border
+          border-gray-200
           bg-white
           text-gray-700
           shadow-sm
+
+          transition
+
+          hover:border-emerald-300
+          hover:text-emerald-600
+
           lg:hidden
+
           dark:border-gray-700
           dark:bg-gray-900
           dark:text-gray-200
@@ -134,7 +178,9 @@ function DashboardNav({ onOpenAI, onAddExpense, onOpenBudget }) {
         <FaBars />
       </button>
 
-      {/* MOBILE OVERLAY */}
+      {/* =====================================================
+          MOBILE OVERLAY
+      ===================================================== */}
 
       {sidebarOpen && (
         <button
@@ -142,7 +188,9 @@ function DashboardNav({ onOpenAI, onAddExpense, onOpenBudget }) {
           aria-label="Close navigation"
           onClick={() => setSidebarOpen(false)}
           className="
-            fixed inset-0 z-[70]
+            fixed
+            inset-0
+            z-[70]
             bg-black/50
             backdrop-blur-sm
             lg:hidden
@@ -150,25 +198,52 @@ function DashboardNav({ onOpenAI, onAddExpense, onOpenBudget }) {
         />
       )}
 
-      {/* SIDEBAR */}
+      {/* =====================================================
+          SIDEBAR
+      ===================================================== */}
 
       <aside
         className={`
-          fixed left-0 top-0 z-[80]
-          flex h-screen w-[250px]
+          fixed
+          left-0
+          top-0
+          z-[80]
+
+          flex
+          h-screen
+          w-[250px]
           flex-col
-          border-r border-emerald-950
+
+          border-r
+          border-emerald-950
+
           bg-[#031815]
           text-white
           shadow-2xl
-          transition-transform duration-300
+
+          transition-transform
+          duration-300
+
           lg:translate-x-0
+
           ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
         `}
       >
-        {/* BRAND */}
+        {/* =====================================================
+            BRAND
+        ===================================================== */}
 
-        <div className="flex shrink-0 items-center justify-between px-5 pb-6 pt-6">
+        <div
+          className="
+            flex
+            shrink-0
+            items-center
+            justify-between
+            px-5
+            pb-6
+            pt-6
+          "
+        >
           <button
             type="button"
             onClick={() =>
@@ -180,12 +255,21 @@ function DashboardNav({ onOpenAI, onAddExpense, onOpenBudget }) {
           >
             <div
               className="
-                flex h-10 w-10 shrink-0
-                items-center justify-center
+                flex
+                h-10
+                w-10
+                shrink-0
+                items-center
+                justify-center
+
                 rounded-xl
+
                 bg-emerald-500
-                text-lg font-black
+
+                text-lg
+                font-black
                 text-white
+
                 shadow-lg
                 shadow-emerald-500/20
               "
@@ -198,7 +282,14 @@ function DashboardNav({ onOpenAI, onAddExpense, onOpenBudget }) {
                 Smart<span className="text-emerald-400">Receipts</span>
               </p>
 
-              <p className="text-[9px] uppercase tracking-wider text-gray-400">
+              <p
+                className="
+                  text-[9px]
+                  uppercase
+                  tracking-wider
+                  text-gray-400
+                "
+              >
                 Smarter expenses. Better decisions.
               </p>
             </div>
@@ -211,12 +302,21 @@ function DashboardNav({ onOpenAI, onAddExpense, onOpenBudget }) {
             aria-label="Close navigation"
             onClick={() => setSidebarOpen(false)}
             className="
-              flex h-8 w-8
-              items-center justify-center
+              flex
+              h-8
+              w-8
+              items-center
+              justify-center
+
               rounded-lg
+
               text-gray-400
+
+              transition
+
               hover:bg-emerald-950
               hover:text-white
+
               lg:hidden
             "
           >
@@ -224,25 +324,33 @@ function DashboardNav({ onOpenAI, onAddExpense, onOpenBudget }) {
           </button>
         </div>
 
-        {/* NAVIGATION */}
+        {/* =====================================================
+            NAVIGATION
+        ===================================================== */}
 
         <div
           className="
             min-h-0
             flex-1
             overflow-y-auto
+
             px-4
             pb-4
+
             scrollbar-thin
             scrollbar-track-transparent
             scrollbar-thumb-emerald-950
           "
         >
           {navigationGroups.map((group) => (
-            <div key={group.title} className="mb-7">
+            <div key={group.title} className="mb-6">
+              {/* GROUP TITLE */}
+
               <p
                 className="
-                  mb-3 px-2
+                  mb-3
+                  px-2
+
                   text-[10px]
                   font-semibold
                   uppercase
@@ -253,49 +361,111 @@ function DashboardNav({ onOpenAI, onAddExpense, onOpenBudget }) {
                 {group.title}
               </p>
 
+              {/* ITEMS */}
+
               <div className="space-y-1">
                 {group.items.map((item) => (
                   <button
                     key={item.id}
                     type="button"
                     onClick={() => handleNavigation(item)}
-                    className="
-                      flex w-full
-                      items-center gap-3
+                    className={`
+                      group
+
+                      flex
+                      w-full
+                      items-center
+                      gap-3
+
                       rounded-xl
-                      px-3 py-3
-                      text-sm font-medium
-                      text-gray-300
+                      px-3
+                      py-3
+
+                      text-sm
+                      font-medium
+
                       transition-all
-                      hover:bg-emerald-950/80
-                      hover:text-white
-                    "
+
+                      ${
+                        item.highlight
+                          ? `
+                            bg-emerald-500/10
+                            text-emerald-300
+
+                            hover:bg-emerald-500/20
+                            hover:text-emerald-200
+                          `
+                          : `
+                            text-gray-300
+
+                            hover:bg-emerald-950/80
+                            hover:text-white
+                          `
+                      }
+                    `}
                   >
+                    {/* ICON */}
+
                     <span
-                      className="
-                        flex w-5
-                        items-center justify-center
-                        text-gray-400
+                      className={`
+                        flex
+                        w-5
+                        items-center
+                        justify-center
+
                         transition-colors
-                        group-hover:text-emerald-400
-                      "
+
+                        ${
+                          item.highlight
+                            ? "text-emerald-400"
+                            : "text-gray-400 group-hover:text-emerald-400"
+                        }
+                      `}
                     >
                       {item.icon}
                     </span>
 
+                    {/* LABEL */}
+
                     <span>{item.label}</span>
+
+                    {/* QUICK ACTION INDICATOR */}
+
+                    {item.highlight && (
+                      <span
+                        className="
+                          ml-auto
+                          rounded-full
+                          bg-emerald-500/10
+                          px-1.5
+                          py-0.5
+
+                          text-[8px]
+                          font-bold
+                          uppercase
+                          tracking-wider
+                          text-emerald-400
+                        "
+                      >
+                        +
+                      </span>
+                    )}
                   </button>
                 ))}
               </div>
             </div>
           ))}
 
-          {/* SETTINGS */}
+          {/* =====================================================
+              SETTINGS
+          ===================================================== */}
 
           <div className="mb-7">
             <p
               className="
-                mb-3 px-2
+                mb-3
+                px-2
+
                 text-[10px]
                 font-semibold
                 uppercase
@@ -307,44 +477,92 @@ function DashboardNav({ onOpenAI, onAddExpense, onOpenBudget }) {
             </p>
 
             <div className="space-y-1">
-              <button
-                type="button"
-                className="
-                  flex w-full
-                  items-center gap-3
-                  rounded-xl
-                  px-3 py-3
-                  text-sm font-medium
-                  text-gray-300
-                  transition
-                  hover:bg-emerald-950/80
-                  hover:text-white
-                "
-              >
-                <span className="flex w-5 justify-center text-gray-400">
-                  <FaCog />
-                </span>
-                Settings
-              </button>
+              {/* SETTINGS */}
 
               <button
                 type="button"
                 className="
-                  flex w-full
-                  items-center gap-3
+                  group
+
+                  flex
+                  w-full
+                  items-center
+                  gap-3
+
                   rounded-xl
-                  px-3 py-3
-                  text-sm font-medium
+                  px-3
+                  py-3
+
+                  text-sm
+                  font-medium
                   text-gray-300
+
                   transition
+
                   hover:bg-emerald-950/80
                   hover:text-white
                 "
               >
-                <span className="flex w-5 justify-center text-gray-400">
+                <span
+                  className="
+                    flex
+                    w-5
+                    justify-center
+
+                    text-gray-400
+                    transition-colors
+
+                    group-hover:text-emerald-400
+                  "
+                >
+                  <FaCog />
+                </span>
+
+                <span>Settings</span>
+              </button>
+
+              {/* HELP */}
+
+              <button
+                type="button"
+                className="
+                  group
+
+                  flex
+                  w-full
+                  items-center
+                  gap-3
+
+                  rounded-xl
+                  px-3
+                  py-3
+
+                  text-sm
+                  font-medium
+                  text-gray-300
+
+                  transition
+
+                  hover:bg-emerald-950/80
+                  hover:text-white
+                "
+              >
+                <span
+                  className="
+                    flex
+                    w-5
+                    justify-center
+
+                    text-gray-400
+                    transition-colors
+
+                    group-hover:text-emerald-400
+                  "
+                >
                   <FaQuestionCircle />
                 </span>
-                Help & Support
+
+                <span>Help & Support</span>
               </button>
             </div>
           </div>

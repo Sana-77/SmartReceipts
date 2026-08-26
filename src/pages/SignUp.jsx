@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
+import AuthFooter from "./AuthFooter";
 import {
   FaArrowRight,
   FaCheck,
@@ -474,6 +475,9 @@ function SignUp() {
           </div>
         </section>
       </div>
+      {/* Footer */}
+
+      <AuthFooter />
     </main>
   );
 }

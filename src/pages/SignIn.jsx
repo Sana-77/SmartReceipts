@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
+import AuthFooter from "./AuthFooter";
 import {
   FaArrowRight,
   FaEye,
@@ -179,14 +180,6 @@ function SignIn() {
                 </p>
               </div>
             </div>
-          </div>
-
-          {/* Footer */}
-
-          <div className="relative z-10 border-t border-white/5 px-10 py-5 xl:px-14">
-            <p className="text-xs text-gray-600">
-              © {new Date().getFullYear()} SmartReceipts. Financial workspace.
-            </p>
           </div>
         </section>
 
@@ -481,6 +474,9 @@ function SignIn() {
           </div>
         </section>
       </div>
+      {/* Footer */}
+
+      <AuthFooter />
     </main>
   );
 }
