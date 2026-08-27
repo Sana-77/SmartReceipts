@@ -687,7 +687,7 @@ function Dashboard() {
                     sm:text-4xl
                   "
                 >
-                  {greeting}, {displayName}! 👋
+                  {greeting}, {displayName}!
                 </h1>
 
                 <p
